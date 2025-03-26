@@ -13,6 +13,9 @@ const __dirname = path.dirname(__filename);
 
 const share_folder_path = `/root/shared`;
 
+const vmname = '';
+const cleanSnapshotName = '';
+let uploadedFileName = '';
 const openai = new OpenAI({
     apiKey: `aa-Wvn09ff6EKoCXiPk5wawvuDGO2Enl5V32Bat1yCnZd7VvN6r`,
     baseURL: baseURL
@@ -45,29 +48,25 @@ app.post("/upload", upload.single("file"), (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
   }
-  
+  uploadedFileName = req.file.filename;
   res.json({
     message: "File uploaded successfully!, starting the vm...",
     filename: req.file.filename,
     path: req.file.path,
   });
+
   // TODO: Copy the file to shared folder
-  // fs.copyFile(req.file.path, path.join(share_folder_path, req.file.filename));
-  // TODO: start the VM
-  const process = exec(`qemu-system-x86_64   -m 4G -smp 4   -enable-kvm   -drive file=windows.qcow2,format=qcow2   -boot d -usb -device usb-tablet   -net nic -net user`);
-  process.stdout.pipe(global.process.stdout)
-  process.stderr.pipe(global.process.stderr)
-  process.on("exit", ()=> {
-    callAI(req.file.path.includes("exe"));
-  })
+  fs.copyFile(req.file.path, path.join(share_folder_path, req.file.path));
+  const process = exec(`virsh start ${vmname}`);
+  process.stdout.pipe(global.process.stdout);
+  process.stderr.pipe(global.process.stderr);
 });
 
 app.get('/analyze', async (req, res) => {
-  // do something
-  // if (!req.body) {
-  //   return res.status(400).send("No log provided.");
-  // }
-  let b = await callAI();
+  if (!req.body) {
+     return res.status(400).send("No log provided.");
+}
+  let b = await callAI(req.body.log);
   // results = b.content || b.refusal || 'no response';
 });
 
@@ -77,13 +76,22 @@ app.get('/update', async (req, res)=> {
   res.send("<div style='font-family: Vazir;direction: rtl;font-size: 2em'>"+results);
 })
 
-
+app.get('/download', (req, res) => {
+  const filePath = path.join(__dirname, 'uploads', uploadedFileName); // Change to your file path
+  res.sendFile(filePath);
+});
 // Start the server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-async function callAI(isDanger) {
-  const log = fs.readFileSync(isDanger? 'log.log' : "log2.log", 'utf-8')
+async function callAI(log) {
+  const process = exec(`virsh shutdown ${vmname}`);
+  process.stdout.pipe(global.process.stdout)
+  process.stderr.pipe(global.process.stderr)
+  process.on("exit", ()=> {
+    const snapshot = exec(`virsh snapshot-revert ${vmname} ${cleanSnapshotName}`);
+  });
+  let llog = (log) ?? `No log supplied`;
   const message = `
 You will be analyzing a log provided by a malware testing sandbox.
 Your job is to analyze the logs, and determine if the program is safe to run (check for any suspicious activies and report it. ).
@@ -92,7 +100,7 @@ Your output should in simple, understandable persian and shouldn't be more than 
 The first sentence should be: این برنامه امن است/نیست.
 then explain each suspicous activity in short. if you see patterns similar 
 Here is the log:
-${log}
+${llog}
 `;
   const chatCompletion = await openai.chat.completions.create({
     messages: [{ role: "user", content: message}],
