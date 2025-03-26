@@ -65,7 +65,7 @@ app.post("/upload", upload.single("file"), (req, res) => {
 app.get('/analyze', async (req, res) => {
   if (!req.body) {
      return res.status(400).send("No log provided.");
-}
+} 
   let b = await callAI(req.body.log);
   // results = b.content || b.refusal || 'no response';
 });
