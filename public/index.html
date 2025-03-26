@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body style="display: flex;flex-direction: column; gap: 50px;">
+    <iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
+    <div style="font-family: 'Ubuntu';text-align: center;"><p style="font-size: 50px;font-weight: bolder;">Safeguard</p></div>
+    <form action="/upload" method="post" enctype="multipart/form-data" target="dummyframe" onsubmit="lol()" style="text-align: center;font-size: 1.5em;">
+        <input type="file" name="file" id="file">
+        <input type="submit" value="Upload">
+    </form>
+    <script>
+        function lol() {
+            window.iiiii = setInterval(()=> {
+                const el = document.getElementById('fr');
+                if(el.contentDocument.body.innerHTML == '<div style="font-family: Vazir;direction: rtl;font-size: 2em"></div>')
+                    el.contentWindow.location.reload();
+                else {
+                    el.contentDocument.body.style = {
+                        "font-family": 'Vazir'
+                    }
+                }
+            }, 2000)
+        }
+    </script>
+    <iframe name="fr" id="fr" src="/update" style="height: 500px;"></iframe>
+</body>
+</html>
