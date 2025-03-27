@@ -42,10 +42,11 @@ function Send-File-Contents {
 # Example Usage:
 # 1. Download a file
 $downloadUrl = "http://192.168.122.1:3000/download"
-$destinationPath = "./sample.exe"
-Download-File -url $downloadUrl -destinationPath $destinationPath
+$sampleFilePath = "./sample.exe"
+Download-File -url $downloadUrl -destinationPath $sampleFilePath
+
 
 # 2. Send file contents to a server
-$filePath = "./logs.log"
-$serverUrl = "https://192.168.122.1:3000/analyze"
-Send-File-Contents -filePath $filePath -serverUrl $serverUrl
+#$filePath = "./logs.log"
+#$serverUrl = "https://192.168.122.1:3000/analyze"
+#Send-File-Contents -filePath $filePath -serverUrl $serverUrl
