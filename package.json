@@ -2,6 +2,7 @@
   "type": "module",
   "dependencies": {
     "child_process": "^1.0.2",
+    "crypto": "^1.0.1",
     "express": "^4.21.2",
     "fs": "^0.0.1-security",
     "multer": "^1.4.5-lts.1",

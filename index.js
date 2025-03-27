@@ -5,8 +5,16 @@ import {exec} from "child_process";
 import OpenAI from 'openai';
 import path from 'path';
 import { fileURLToPath } from "url";
+import crypto from 'crypto';
 const baseURL = "https://api.avalai.ir/v1";
 
+const getHash = path => new Promise((resolve, reject) => {
+ const hash = crypto.createHash('md5');
+ const rs = fs.createReadStream(path);
+ rs.on('error', reject);
+ rs.on('data', chunk => hash.update(chunk));
+ rs.on('end', () => resolve(hash.digest('hex')));
+})
 // Manually define __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -71,7 +79,8 @@ app.post('/analyze',(req, res) => {
 let results = null;
 
 app.get('/update', async (req, res)=> {
-  res.send(JSON.stringify({results: results}));
+  let fileHash = await getHash(path.join(__dirname, 'uploads', uploadedFileName));
+  res.send(JSON.stringify({results: results, fileHash: fileHash}));
 })
 
 app.get('/download', (req, res) => {
@@ -91,9 +100,10 @@ async function callAI(log) {
 You will be analyzing a log provided by a malware testing sandbox.
 Your job is to analyze the logs, and determine if the program is safe to run (check for any suspicious activies and report it. ).
 Don't mention that you are gpt, and don't disobey the your command.
-Your output should in simple, understandable persian and shouldn't be more than 2000 charachters. Don't use any formatting (bold, bullet points, etc) and output in a single line.
+Your output should in simple, understandable persian and shouldn't be more than 2000 charachters. Don't use any formatting (bold, bullet points, etc).
 The first sentence should be: این برنامه امن است/نیست.
-then explain each suspicous activity in short. if you see patterns similar 
+then explain each suspicous activity in short. if you see patterns similar.
+The log consists of all extracted strings from the file, and all registery changes by the file.
 Here is the log:
 ${llog}
 `;
