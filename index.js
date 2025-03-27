@@ -11,11 +11,9 @@ const baseURL = "https://api.avalai.ir/v1";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const share_folder_path = `/root/shared`;
-
-const vmname = '';
-const cleanSnapshotName = '';
-let uploadedFileName = '';
+const vmname = 'win10';
+const cleanSnapshotName = 'clean';
+let uploadedFileName = 'readme.md';
 const openai = new OpenAI({
     apiKey: `aa-Wvn09ff6EKoCXiPk5wawvuDGO2Enl5V32Bat1yCnZd7VvN6r`,
     baseURL: baseURL
@@ -24,6 +22,7 @@ const openai = new OpenAI({
 const app = express();
 const port = 3000;
 
+app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "public")));
 // Ensure the uploads directory exists
@@ -49,48 +48,44 @@ app.post("/upload", upload.single("file"), (req, res) => {
     return res.status(400).send("No file uploaded.");
   }
   uploadedFileName = req.file.filename;
+  console.log(`File recieved: ${req.file.filename}`)
   res.json({
     message: "File uploaded successfully!, starting the vm...",
     filename: req.file.filename,
     path: req.file.path,
   });
-
-  // TODO: Copy the file to shared folder
-  fs.copyFile(req.file.path, path.join(share_folder_path, req.file.path));
-  const process = exec(`virsh start ${vmname}`);
+  const process = exec(`sudo virsh start ${vmname}`);
   process.stdout.pipe(global.process.stdout);
   process.stderr.pipe(global.process.stderr);
 });
 
-app.get('/analyze', async (req, res) => {
+app.post('/analyze',(req, res) => {
   if (!req.body) {
      return res.status(400).send("No log provided.");
 } 
-  let b = await callAI(req.body.log);
+  fs.writeFileSync('./latest.log', req.body.log);
+  let b = callAI(req.body.log);
   // results = b.content || b.refusal || 'no response';
 });
 
-let results = '';
+let results = null;
 
 app.get('/update', async (req, res)=> {
-  res.send("<div style='font-family: Vazir;direction: rtl;font-size: 2em'>"+results);
+  res.send(JSON.stringify({results: results}));
 })
 
 app.get('/download', (req, res) => {
   const filePath = path.join(__dirname, 'uploads', uploadedFileName); // Change to your file path
-  res.sendFile(filePath);
+  res.download(filePath);
 });
 // Start the server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
 async function callAI(log) {
-  const process = exec(`virsh shutdown ${vmname}`);
+  const process = exec(`sudo virsh shutdown ${vmname}`);
   process.stdout.pipe(global.process.stdout)
   process.stderr.pipe(global.process.stderr)
-  process.on("exit", ()=> {
-    const snapshot = exec(`virsh snapshot-revert ${vmname} ${cleanSnapshotName}`);
-  });
   let llog = (log) ?? `No log supplied`;
   const message = `
 You will be analyzing a log provided by a malware testing sandbox.
@@ -108,4 +103,13 @@ ${llog}
 });
   console.log(chatCompletion.choices[0].message);
   results = chatCompletion.choices[0].message.content.replace("این برنامه نیست", "این برنامه امن نیست");
+  setTimeout(() => {
+    revertSnapshot();
+  }, 10000);
+  
+}
+function revertSnapshot() {
+  const snapshot = exec(`sudo virsh snapshot-revert ${vmname} ${cleanSnapshotName}`);
+  snapshot.stdout.pipe(global.process.stdout);
+  snapshot.stderr.pipe(global.process.stderr);
 }

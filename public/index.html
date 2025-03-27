@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Safeguard</title>
 </head>
 <body style="display: flex;flex-direction: column; gap: 50px;">
     <iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
@@ -12,20 +12,44 @@
         <input type="file" name="file" id="file">
         <input type="submit" value="Upload">
     </form>
+    
+    <p id="aiResp" style="text-align: center;font-family: 'Vazir';"></p>
     <script>
+        let updateInterval = null;
         function lol() {
+            
             window.iiiii = setInterval(()=> {
-                const el = document.getElementById('fr');
+                /*const el = document.getElementById('fr');
                 if(el.contentDocument.body.innerHTML == '<div style="font-family: Vazir;direction: rtl;font-size: 2em"></div>')
                     el.contentWindow.location.reload();
                 else {
                     el.contentDocument.body.style = {
                         "font-family": 'Vazir'
                     }
-                }
+                }*/
             }, 2000)
         }
+        async function getUpdate() {
+            // Make a GET request to the backend
+fetch('http://localhost:3000/update')
+  .then(response => response.json())  // Parse the JSON response
+  .then(data => {
+    console.log('Data received:', data);  // Handle the data you receive
+    if (data.results != null) {
+        document.getElementById('aiResp').innerHTML = data.results;
+        clearInterval(updateInterval);
+    } else {
+        console.log('Waiting for AI');
+    }
+  })
+  .catch(error => {
+    console.error('Error fetching data:', error);
+  });
+
+        }
+        updateInterval =  setInterval(async () => {
+                await getUpdate();
+            }, 2000);
     </script>
-    <iframe name="fr" id="fr" src="/update" style="height: 500px;"></iframe>
 </body>
 </html>
