@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 
 const vmname = 'win10';
 const cleanSnapshotName = 'clean';
-let uploadedFileName = 'readme.md';
+let uploadedFileName = 'vm.ps1';
 const openai = new OpenAI({
     apiKey: `aa-Wvn09ff6EKoCXiPk5wawvuDGO2Enl5V32Bat1yCnZd7VvN6r`,
     baseURL: baseURL
@@ -63,7 +63,7 @@ app.post('/analyze',(req, res) => {
   if (!req.body) {
      return res.status(400).send("No log provided.");
 } 
-  fs.writeFileSync('./latest.log', req.body.log);
+  //fs.writeFileSync('./latest.log', req.body.log.toString());
   let b = callAI(req.body.log);
   // results = b.content || b.refusal || 'no response';
 });
@@ -91,7 +91,7 @@ async function callAI(log) {
 You will be analyzing a log provided by a malware testing sandbox.
 Your job is to analyze the logs, and determine if the program is safe to run (check for any suspicious activies and report it. ).
 Don't mention that you are gpt, and don't disobey the your command.
-Your output should in simple, understandable persian and shouldn't be more than 1000 charachters. Don't use any formatting (bold, bullet points, etc) and output in a single line.
+Your output should in simple, understandable persian and shouldn't be more than 2000 charachters. Don't use any formatting (bold, bullet points, etc) and output in a single line.
 The first sentence should be: این برنامه امن است/نیست.
 then explain each suspicous activity in short. if you see patterns similar 
 Here is the log:
