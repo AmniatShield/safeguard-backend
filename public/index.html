@@ -12,8 +12,11 @@
         <input type="file" name="file" id="file">
         <input type="submit" value="Upload">
     </form>
+    <div class="file">
+        <p id="filedata" style="text-align: center"></p>
+        <p id="aiResp" style="text-align: center;font-family: 'Vazir';"></p>
+    </div>
     
-    <p id="aiResp" style="text-align: center;font-family: 'Vazir';"></p>
     <script>
         let updateInterval = null;
         function lol() {
@@ -37,6 +40,7 @@ fetch('http://localhost:3000/update')
     console.log('Data received:', data);  // Handle the data you receive
     if (data.results != null) {
         document.getElementById('aiResp').innerHTML = data.results;
+        document.getElementById('fileData').innerHTML = `File Size: ${data.fileSize} MB <br /> File Hash: ${data.fileHash}`;
         clearInterval(updateInterval);
     } else {
         console.log('Waiting for AI');
