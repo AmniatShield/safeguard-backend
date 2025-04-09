@@ -24,7 +24,6 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
-
 app.use(express.static(path.join(__dirname, "public")));
 // Ensure the uploads directory exists
 const uploadDir = "./uploads";
@@ -59,16 +58,28 @@ app.post("/upload", upload.single("file"), (req, res) => {
   process.stderr.pipe(global.process.stderr);
 });
 
-app.post("/analyze", (req, res) => {
+/*app.post("/analyze", express.json({limit: '60mb'}),(req, res) => {
   if (!req.body) {
     return res.status(400).send("No log provided.");
   }
   //fs.writeFileSync('./latest.log', req.body.log.toString());
   let b = callAI(req.body.log);
   // results = b.content || b.refusal || 'no response';
-});
+});*/
 let results = null;
-
+app.post("/analyze", upload.single("file"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("No file uploaded.");
+  }
+  console.log(`Log recieved: ${req.file.filename}`);
+  let log = await fs.readFileSync(path.join(__dirname, "uploads", req.file.filename));
+  let b = callAI(log);
+  res.json({
+    message: "File uploaded successfully!, starting the vm...",
+    filename: req.file.filename,
+    path: req.file.path,
+  });
+});
 app.get("/update", async (req, res) => {
   let fileHash = await createMD5(
     path.join(__dirname, "uploads", uploadedFileName)
@@ -77,12 +88,15 @@ app.get("/update", async (req, res) => {
   res.send(
     JSON.stringify({ results: results, fileHash: fileHash, fileSize: fileSize })
   );
-  uploadedFileName = "";
-  results = null;
+  if (results != null) {
+    uploadedFileName = "";
+    results = null;
+  }
+
 });
 
 app.get("/download", (req, res) => {
-  const filePath = path.join(__dirname, "uploads", uploadedFileName); // Change to your file path
+  const filePath = path.join(__dirname, "uploads", uploadedFileName);
   res.download(filePath);
 });
 app.post("/ai", async (req, res) => {
@@ -152,7 +166,7 @@ ${query}
   r = chatCompletion.choices[0].message.content;
   return r;
 }
-const createMD5 = async (filePath) => {
+async function createMD5 (filePath) {
   // Check if the file exists at the specified path
   if (!fs.existsSync(filePath))
     throw new Error(
@@ -161,9 +175,7 @@ const createMD5 = async (filePath) => {
 
   // Check if the specified path is a directory
   if (fs.statSync(filePath).isDirectory())
-    throw new Error(
-      `The path "${filePath}" points to a directory, not a file. Please provide a valid file path.`
-    );
+    return;
 
   // Check if the file is readable
   try {
