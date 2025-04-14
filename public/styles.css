@@ -1,0 +1,164 @@
+
+  
+  .preloader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-51%, -50%);
+    -moz-transform: translate(-51%, -50%);
+    -ms-transform: translate(-51%, -50%);
+    -o-transform: translate(-51%, -50%);
+    transform: translate(-51%, -50%);
+    width: 240px;
+    height: 240px;
+    border: 5px solid #00e676;
+    border-radius: 120px;
+    box-sizing: border-box;
+  }
+  .preloader:after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-51%, -50%);
+    -moz-transform: translate(-51%, -50%);
+    -ms-transform: translate(-51%, -50%);
+    -o-transform: translate(-51%, -50%);
+    transform: translate(-51%, -50%);
+    content: " ";
+    display: block;
+    background:  rgb(2 6 23);;
+    transform-origin: center;
+    z-index: 0;
+  }
+  .preloader:after {
+    width: 100px;
+    height: 200%;
+    -webkit-animation: outerRotate2 30s infinite linear;
+    -moz-animation: outerRotate2 30s infinite linear;
+    -o-animation: outerRotate2 30s infinite linear;
+    animation: outerRotate2 30s infinite linear;
+  }
+  .preloader .loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-51%, -50%);
+    -moz-transform: translate(-51%, -50%);
+    -ms-transform: translate(-51%, -50%);
+    -o-transform: translate(-51%, -50%);
+    transform: translate(-51%, -50%);
+    width: 200px;
+    height: 200px;
+    color: #888;
+    text-align: center;
+    border: 5px solid #08ff87;
+    border-radius: 100px;
+    box-sizing: border-box;
+    z-index: 20;
+    text-transform: uppercase;
+  }
+  .preloader .loader:after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-51%, -50%);
+    -moz-transform: translate(-51%, -50%);
+    -ms-transform: translate(-51%, -50%);
+    -o-transform: translate(-51%, -50%);
+    transform: translate(-51%, -50%);
+    content: " ";
+    display: block;
+    background:  rgb(2 6 23);;
+    transform-origin: center;
+    z-index: -1;
+  }
+  .preloader .loader:after {
+    width: 100px;
+    height: 106%;
+    -webkit-animation: outerRotate1 15s infinite linear;
+    -moz-animation: outerRotate1 15s infinite linear;
+    -o-animation: outerRotate1 15s infinite linear;
+    animation: outerRotate1 15s infinite linear;
+  }
+  .preloader .loader .text {
+    font-size: 14px;
+    font-size: 1.4rem;
+    line-height: 130px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-51%, -50%);
+    -moz-transform: translate(-51%, -50%);
+    -ms-transform: translate(-51%, -50%);
+    -o-transform: translate(-51%, -50%);
+    transform: translate(-51%, -50%);
+    -webkit-animation: textColour 1s alternate linear infinite;
+    -moz-animation: textColour 1s alternate linear infinite;
+    -o-animation: textColour 1s alternate linear infinite;
+    animation: textColour 1s alternate linear infinite;
+    display: block;
+    width: 140px;
+    height: 140px;
+    text-align: center;
+    border: 5px solid #05ff2d;
+    border-radius: 70px;
+    box-sizing: border-box;
+    z-index: 20;
+  }
+  .preloader .loader .text:before, .preloader .loader .text:after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-51%, -50%);
+    -moz-transform: translate(-51%, -50%);
+    -ms-transform: translate(-51%, -50%);
+    -o-transform: translate(-51%, -50%);
+    transform: translate(-51%, -50%);
+    content: " ";
+    display: block;
+    background:  rgb(2 6 23);;
+    transform-origin: center;
+    z-index: -1;
+  }
+  .preloader .loader .text:before {
+    width: 110%;
+    height: 40px;
+    -webkit-animation: outerRotate2 3.5s infinite linear;
+    -moz-animation: outerRotate2 3.5s infinite linear;
+    -o-animation: outerRotate2 3.5s infinite linear;
+    animation: outerRotate2 3.5s infinite linear;
+  }
+  .preloader .loader .text:after {
+    width: 40px;
+    height: 110%;
+    -webkit-animation: outerRotate1 8s infinite linear;
+    -moz-animation: outerRotate1 8s infinite linear;
+    -o-animation: outerRotate1 8s infinite linear;
+    animation: outerRotate1 8s infinite linear;
+  }
+  
+
+  @keyframes outerRotate1 {
+    0% {
+      transform: translate(-50%, -50%) rotate(0);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+  @keyframes outerRotate2 {
+    0% {
+      transform: translate(-50%, -50%) rotate(0);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(-360deg);
+    }
+  }
+  @keyframes textColour {
+    0% {
+      color: #fff;
+    }
+    100% {
+      color: #05ff2d;
+    }
+  }

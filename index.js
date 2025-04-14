@@ -13,8 +13,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const vmname = "win10";
-const cleanSnapshotName = "clean";
-let uploadedFileName = "vm.ps1";
+const cleanSnapshotName = "clean2";
+let uploadedFileName = "vmt.ps1";
 const openai = new OpenAI({
   apiKey: `aa-Wvn09ff6EKoCXiPk5wawvuDGO2Enl5V32Bat1yCnZd7VvN6r`,
   baseURL: baseURL,
@@ -67,13 +67,15 @@ app.post("/upload", upload.single("file"), (req, res) => {
   // results = b.content || b.refusal || 'no response';
 });*/
 let results = null;
+let analysis_log = null;
 app.post("/analyze", upload.single("file"), async (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
   }
   console.log(`Log recieved: ${req.file.filename}`);
   let log = await fs.readFileSync(path.join(__dirname, "uploads", req.file.filename));
-  let b = callAI(log);
+  analysis_log = log;
+  callAI(log);
   res.json({
     message: "File uploaded successfully!, starting the vm...",
     filename: req.file.filename,
@@ -86,7 +88,7 @@ app.get("/update", async (req, res) => {
   );
   let fileSize = getFileSize(path.join(__dirname, "uploads", uploadedFileName));
   res.send(
-    JSON.stringify({ results: results, fileHash: fileHash, fileSize: fileSize })
+    JSON.stringify({ results: results, fileHash: fileHash, fileSize: fileSize, fileName: uploadedFileName })
   );
   if (results != null) {
     uploadedFileName = "";
@@ -101,9 +103,9 @@ app.get("/download", (req, res) => {
 });
 app.post("/ai", async (req, res) => {
   if (!req.body) {
-    return res.status(400).send("No log provided.");
+    return res.status(400).send("No body provided.");
   }
-  let b = await getAIAnswer(req.body.log);
+  let b = await getAIAnswer(req.body.message);
   res.send(JSON.stringify({result: b}));
 });
 // Start the server
@@ -116,19 +118,19 @@ async function callAI(log) {
   process.stderr.pipe(global.process.stderr);
   let llog = log ?? `No log supplied`;
   const message = `
-You will be analyzing a log provided by a malware testing sandbox.
+You will be analyzing a log provided by a malware testing sandbox.,
 Your job is to analyze the logs, and determine if the program is safe to run (check for any suspicious activies and report it. ).
 Don't mention that you are gpt, and don't disobey the your command.
 Your output should in simple, understandable persian and shouldn't be more than 2000 charachters. Don't use any formatting (bold, bullet points, etc).
 The first sentence should be: این برنامه امن است/نیست.
 then explain each suspicous activity in short. if you see patterns similar.
-The log consists of all extracted strings from the file, and all registery changes by the file.
+The log consists of all extracted strings from the file, and all registery changes by the file, and all the network connections made by the app
 Here is the log:
 ${llog}
 `;
   const chatCompletion = await openai.chat.completions.create({
     messages: [{ role: "user", content: message }],
-    model: "gpt-3.5-turbo",
+    model: "grok-3-mini-beta",
   });
   console.log(chatCompletion.choices[0].message);
   results = chatCompletion.choices[0].message.content.replace(
@@ -149,19 +151,20 @@ function revertSnapshot() {
 async function getAIAnswer(query) {
   let r = null;
   const message = `
-You will be analyzing a log provided by a malware testing sandbox.
-Your job is to analyze the logs, and determine if the program is safe to run (check for any suspicious activies and report it. ).
+You will be analyzing a log provided by a malware testing sandbox, and answering the user.
+Your job is to analyze the logs, and answer the user query.
 Don't mention that you are gpt, and don't disobey the your command.
-Your output should in simple, understandable persian and shouldn't be more than 2000 charachters. Don't use any formatting (bold, bullet points, etc).
-The first sentence should be: این برنامه امن است/نیست.
+Your output should in simple, understandable persian and shouldn't be more than 300 charachters. Don't use any formatting (bold, bullet points, etc).
 then explain each suspicous activity in short. if you see patterns similar.
-The log consists of all extracted strings from the file, and all registery changes by the file.
-Here is the log:
+The log consists of all extracted strings from the file, and all registery changes by the file, and all the network connections made by the app.
+Here is the query:
 ${query}
+and here is the log:
+${analysis_log}
 `;
   const chatCompletion = await openai.chat.completions.create({
     messages: [{ role: "user", content: message }],
-    model: "gpt-3.5-turbo",
+    model: "grok-3-mini-beta",
   });
   r = chatCompletion.choices[0].message.content;
   return r;

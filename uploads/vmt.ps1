@@ -1,3 +1,5 @@
+$scriptDir = Split-Path -Parent $PSCommandPath
+Set-Location -Path $scriptDir
 # Function 1: Download a file from a given URL
 function Download-File {
     param(
@@ -20,15 +22,11 @@ function Send-File-Contents {
         [string]$filePath,  # Path to the text file
         [string]$serverUrl  # URL of the server to send the POST request to
     )
-
+        $curlPath = "sysinternals\curl.exe"
     try {
-        # Read the file contents
-        $fileContents = Get-Content -Path $filePath -Raw
-        $FileContent = [IO.File]::ReadAllText($filePath);
-        $Fields = @{'uploadFile'=$FileContent};
-        $boundary = [System.Guid]::NewGuid().ToString(); 
-        $response = Invoke-RestMethod -Uri $serverUrl -ContentType "multipart/form-data; boundry=$boundry" -Method Post -Body $Fields;
-
+        & $curlPath -X POST $serverUrl `
+  -H "Content-Type: multipart/form-data" `
+  -F "file=@$filePath;type=text/plain"
         Write-Host "Response from server: $response"
     } catch {
         Write-Host "Error sending file contents: $_"
@@ -71,7 +69,7 @@ reg export HKCU $baselineFile /y
 
 # Let the process run for 1 minute
 Write-Output "Running process for 1 minute..."
-Start-Sleep -Seconds 60
+Start-Sleep -Seconds 10
 
 $connections = Get-NetTCPConnection | Where-Object { $_.OwningProcess -eq $process.Id }
 # Attempt to stop the process if it's still running

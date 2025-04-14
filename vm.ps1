@@ -22,12 +22,15 @@ function Send-File-Contents {
     )
 
     try {
-        # Read the file contents
-        $fileContents = Get-Content -Path $filePath -Raw
-        $FileContent = [IO.File]::ReadAllText($filePath);
-        $Fields = @{'uploadFile'=$FileContent};
-        $boundary = [System.Guid]::NewGuid().ToString(); 
-        $response = Invoke-RestMethod -Uri $serverUrl -ContentType "multipart/form-data; boundary=$boundary" -Method Post -Body $Fields;
+        $fieldName = "file"
+        $curlPath = "sysinternals\curl.exe"
+        $curlCommand = @"
+`"$curlPath`" -X POST `"$serverUrl`" `
+-H "Accept: application/json" `
+-H "Content-Type: multipart/form-data" `
+-F "$fieldName=@$filePath"
+"@
+Invoke-Expression $curlCommand
 
         Write-Host "Response from server: $response"
     } catch {
