@@ -42,7 +42,7 @@ fileInput.addEventListener('change', () => {
   });
 
 window.addEventListener("load",e=>{
-  document.getElementById("ai-chat").innerHTML = "<div class='text-sm text-white-950 mt-5 text-left bg-gray-800 p-2 mb-2 rounded-tl-xl rounded-tr-xl rounded-br-xl'>سلام! چطور میتوانم کمکتان کنم؟سلام! چطور میتوانم کمکتان کنم؟سلام! چطور میتوانم کمکتان کنم؟</div>"
+  document.getElementById("ai-chat").innerHTML = "<div class='text-sm text-white-950 mt-5 text-left bg-gray-800 p-2 mb-2 rounded-tl-xl rounded-tr-xl rounded-br-xl'>سلام! چطور میتونم کمکتون کنم؟<div>"
 })
 
 document.getElementById("send").addEventListener("click",async e =>{
