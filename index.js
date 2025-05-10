@@ -47,7 +47,7 @@ app.post("/upload", upload.single("file"), (req, res) => {
     return res.status(400).send("No file uploaded.");
   }
   uploadedFileName = req.file.filename;
-  console.log(`File recieved: ${req.file.filename}`);
+  console.log(`[${currentTime()}] File recieved: ${req.file.filename}`);
   res.json({
     message: "File uploaded successfully!, starting the vm...",
     filename: req.file.filename,
@@ -67,12 +67,13 @@ app.post("/upload", upload.single("file"), (req, res) => {
   // results = b.content || b.refusal || 'no response';
 });*/
 let results = null;
+let results2 = null;
 let analysis_log = null;
 app.post("/analyze", upload.single("file"), async (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
   }
-  console.log(`Log recieved: ${req.file.filename}`);
+  console.log(`[${currentTime()}] Log recieved: ${req.file.filename}`);
   let log = await fs.readFileSync(path.join(__dirname, "uploads", req.file.filename));
   analysis_log = log;
   callAI(log);
@@ -110,7 +111,7 @@ app.post("/ai", async (req, res) => {
 });
 // Start the server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`[${currentTime()}] Server running at http://localhost:${port}`);
 });
 async function callAI(log) {
   const process = exec(`sudo virsh shutdown ${vmname}`);
@@ -130,13 +131,14 @@ ${llog}
 `;
   const chatCompletion = await openai.chat.completions.create({
     messages: [{ role: "user", content: message }],
-    model: "grok-3-mini-beta",
+    model: "gemini-2.5-flash-preview-04-17",
   });
-  console.log(chatCompletion.choices[0].message);
+  console.log(`[${currentTime()}] AI Response: \n ${chatCompletion.choices[0].message.content}`);
   results = chatCompletion.choices[0].message.content.replace(
     "این برنامه نیست",
     "این برنامه امن نیست"
   );
+  results2 = results;
   setTimeout(() => {
     revertSnapshot();
   }, 10000);
@@ -159,12 +161,15 @@ then explain each suspicous activity in short. if you see patterns similar.
 The log consists of all extracted strings from the file, and all registery changes by the file, and all the network connections made by the app.
 Here is the query:
 ${query}
+Here is the previous analysis by the AI:
+${results2}
+DO NOT REPEAT THE PREVIOUS ANALYSIS. ONLY ANSWER THE QUERY DIRECTLY.
 and here is the log:
 ${analysis_log}
 `;
   const chatCompletion = await openai.chat.completions.create({
     messages: [{ role: "user", content: message }],
-    model: "grok-3-mini-beta",
+    model: "gemini-2.5-flash-preview-04-17",
   });
   r = chatCompletion.choices[0].message.content;
   return r;
@@ -210,4 +215,8 @@ function getFileSize(filePath) {
   // Convert the file size to megabytes (optional)
   var fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
   return fileSizeInMegabytes;
+}
+
+function currentTime() {
+  return new Date().toLocaleString();
 }

@@ -48,6 +48,7 @@ window.addEventListener("load",e=>{
 document.getElementById("send").addEventListener("click",async e =>{
   let text = document.getElementById("text").value;
   document.getElementById("ai-chat").innerHTML += `<div class='text-sm text-white-950 mt-5 text-right bg-gray-600 p-2 mb-2 rounded-tl-xl rounded-tr-xl rounded-bl-xl message'>${text}</div>`;
+  document.getElementById("text").value = "";
   await fetch("/ai",{
     method: "POST",
     body: JSON.stringify({ message: text }),
@@ -60,7 +61,7 @@ document.getElementById("send").addEventListener("click",async e =>{
   });
   
   
-  document.getElementById("text").value = "";
+  
 })
 
 document.getElementById("ai-chat").addEventListener("change",e=>{
