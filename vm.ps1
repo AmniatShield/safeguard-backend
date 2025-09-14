@@ -1,3 +1,5 @@
+## NOT USED
+
 # Function 1: Download a file from a given URL
 function Download-File {
     param(
@@ -59,10 +61,10 @@ if (-not (Test-Path $outputDir)) {
 
 Write-Output "Starting target process: $sampleFilePath"
 $process = Start-Process -FilePath $sampleFilePath -PassThru
-
+$pidd = $process.Id
 
 # Allow the process to initialize
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 5
 
 # Extract strings from the target executable using the Strings tool
 Write-Output "Extracting strings from: $sampleFilePath"
@@ -76,7 +78,7 @@ reg export HKCU $baselineFile /y
 Write-Output "Running process for 1 minute..."
 Start-Sleep -Seconds 60
 
-$connections = Get-NetTCPConnection | Where-Object { $_.OwningProcess -eq $process.Id }
+$connections = Get-NetTCPConnection | Where-Object { $_.OwningProcess -eq $pidd }
 # Attempt to stop the process if it's still running
 Write-Output "Stopping target process (PID: $($process.Id))..."
 try {

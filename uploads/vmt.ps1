@@ -38,13 +38,15 @@ $downloadUrl = "http://192.168.122.1:3000/download"
 $sampleFilePath = ".\sample.exe"
 Download-File -url $downloadUrl -destinationPath $sampleFilePath
 
-$stringsTool = "sysinternals\strings64.exe"    # <-- Change to the path of Strings tool
+$flossTool = "sysinternals\floss.exe"
+$handleTool = "sysinternals\handle64.exe"
 # Define output directory and file paths
 $outputDir    = "AnalysisOutput"
 $stringsOutput = "$outputDir\StringsOutput.txt"
 $baselineFile = "$outputDir\HKCU_Baseline.reg"
 $postFile     = "$outputDir\HKCU_Post.reg"
 $diffFile     = "$outputDir\HKCU_Diff.txt"
+$openHandles  = "$outputDir\handles.txt"
 $logFile      = "logs.log"
 $ConnectionFile = "$outputDir\connect.txt"
 # Ensure the output directory exists
@@ -54,14 +56,14 @@ if (-not (Test-Path $outputDir)) {
 
 Write-Output "Starting target process: $sampleFilePath"
 $process = Start-Process -FilePath $sampleFilePath -PassThru
-
+$pidd = $process.Id
 
 # Allow the process to initialize
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 5
 
 # Extract strings from the target executable using the Strings tool
 Write-Output "Extracting strings from: $sampleFilePath"
-Start-Process -FilePath $stringsTool -ArgumentList "-nobanner -n 6 -o -a -u `"$sampleFilePath`"" -RedirectStandardOutput $stringsOutput -NoNewWindow -Wait
+Start-Process -FilePath $flossTool -ArgumentList "--only static 8 -q `"$sampleFilePath`"" -RedirectStandardOutput $stringsOutput -NoNewWindow -Wait
 
 # Export the baseline snapshot of the HKCU hive
 Write-Output "Exporting baseline HKCU registry snapshot..."
@@ -69,15 +71,17 @@ reg export HKCU $baselineFile /y
 
 # Let the process run for 1 minute
 Write-Output "Running process for 1 minute..."
-Start-Sleep -Seconds 10
-
-$connections = Get-NetTCPConnection | Where-Object { $_.OwningProcess -eq $process.Id }
+Start-Sleep -Seconds 5
+# Get Open File Handles
+Start-Process -FilePath $handleTool -ArgumentList "-p $pidd" -RedirectStandardOutput $openHandles -NoNewWindow -Wait
+# Get Network connections
+$connections = Get-NetTCPConnection | Where-Object { $_.OwningProcess -eq $pidd }
 # Attempt to stop the process if it's still running
-Write-Output "Stopping target process (PID: $($process.Id))..."
+Write-Output "Stopping target process (PID: $($process.pidd))..."
 try {
     $process.Refresh()
     if (-not $process.HasExited) {
-        Stop-Process -Id $process.Id -Force
+        Stop-Process -Id $pidd -Force
         Write-Output "Process stopped."
     } else {
         Write-Output "Process has already terminated."
@@ -106,10 +110,12 @@ Write-Output "Strings extraction completed. Output saved to: $stringsOutput"
 Write-Output "Registry changes have been logged to: $diffFile"
 Write-Output "Connections made by the sample:\n" | Out-File -FilePath $logFile -Append
 Get-Content -Path $ConnectionFile | Out-File -FilePath $logFile -Append
-Write-Output "Strings extracted from the sample:" | Out-File -FilePath $logFile -Append
+Write-Output "static Strings extracted from the sample:\n" | Out-File -FilePath $logFile -Append
 Get-Content -Path $stringsOutput | Out-File -FilePath $logFile -Append
-Write-Output "Registry changes made by the sample" | Out-File -FilePath $logFile -Append
+Write-Output "Registry changes made by the sample:\n" | Out-File -FilePath $logFile -Append
 Get-Content -Path $diffFile | Out-File -FilePath $logFile -Append
+Write-Output "Open file handles made by the sample:\n" | Out-File -FilePath $logFile -Append
+Get-Content -Path $openHandles | Out-File -FilePath $logFile -Append
 # 2. Send file contents to a server
 $serverUrl = "http://192.168.122.1:3000/analyze"
 Send-File-Contents -filePath $logFile -serverUrl $serverUrl

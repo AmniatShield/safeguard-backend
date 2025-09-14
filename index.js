@@ -74,7 +74,9 @@ app.post("/analyze", upload.single("file"), async (req, res) => {
     return res.status(400).send("No file uploaded.");
   }
   console.log(`[${currentTime()}] Log recieved: ${req.file.filename}`);
-  let log = await fs.readFileSync(path.join(__dirname, "uploads", req.file.filename));
+  let log = await fs.readFileSync(
+    path.join(__dirname, "uploads", req.file.filename)
+  );
   analysis_log = log;
   callAI(log);
   res.json({
@@ -89,13 +91,17 @@ app.get("/update", async (req, res) => {
   );
   let fileSize = getFileSize(path.join(__dirname, "uploads", uploadedFileName));
   res.send(
-    JSON.stringify({ results: results, fileHash: fileHash, fileSize: fileSize, fileName: uploadedFileName })
+    JSON.stringify({
+      results: results,
+      fileHash: fileHash,
+      fileSize: fileSize,
+      fileName: uploadedFileName,
+    })
   );
   if (results != null) {
     uploadedFileName = "";
     results = null;
   }
-
 });
 
 app.get("/download", (req, res) => {
@@ -107,7 +113,7 @@ app.post("/ai", async (req, res) => {
     return res.status(400).send("No body provided.");
   }
   let b = await getAIAnswer(req.body.message);
-  res.send(JSON.stringify({result: b}));
+  res.send(JSON.stringify({ result: b }));
 });
 // Start the server
 app.listen(port, () => {
@@ -131,9 +137,13 @@ ${llog}
 `;
   const chatCompletion = await openai.chat.completions.create({
     messages: [{ role: "user", content: message }],
-    model: "gemini-2.5-flash-preview-04-17",
+    model: "gemini-2.5-flash-lite",
   });
-  console.log(`[${currentTime()}] AI Response: \n ${chatCompletion.choices[0].message.content}`);
+  console.log(
+    `[${currentTime()}] AI Response: \n ${
+      chatCompletion.choices[0].message.content
+    }`
+  );
   results = chatCompletion.choices[0].message.content.replace(
     "این برنامه نیست",
     "این برنامه امن نیست"
@@ -169,12 +179,12 @@ ${analysis_log}
 `;
   const chatCompletion = await openai.chat.completions.create({
     messages: [{ role: "user", content: message }],
-    model: "gemini-2.5-flash-preview-04-17",
+    model: "gemini-2.5-flash-lite",
   });
   r = chatCompletion.choices[0].message.content;
   return r;
 }
-async function createMD5 (filePath) {
+async function createMD5(filePath) {
   // Check if the file exists at the specified path
   if (!fs.existsSync(filePath))
     throw new Error(
@@ -182,8 +192,7 @@ async function createMD5 (filePath) {
     );
 
   // Check if the specified path is a directory
-  if (fs.statSync(filePath).isDirectory())
-    return;
+  if (fs.statSync(filePath).isDirectory()) return;
 
   // Check if the file is readable
   try {
@@ -208,7 +217,7 @@ async function createMD5 (filePath) {
 
   // Return the final hash as a hexadecimal string
   return hash.digest("hex");
-};
+}
 function getFileSize(filePath) {
   var stats = fs.statSync(filePath);
   var fileSizeInBytes = stats.size;
