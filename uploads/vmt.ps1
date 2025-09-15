@@ -1,3 +1,5 @@
+# V5 B2
+
 $scriptDir = Split-Path -Parent $PSCommandPath
 Set-Location -Path $scriptDir
 
@@ -127,7 +129,7 @@ foreach ($path in $paths) {
 
 # Extract strings from the target executable using the Strings tool
 Write-Output "Extracting strings from: $sampleFilePath"
-Start-Process -FilePath $flossTool -ArgumentList "--only static 8 -q `"$sampleFilePath`"" -RedirectStandardOutput $stringsOutput -NoNewWindow -Wait
+Start-Process -FilePath $flossTool -ArgumentList "--only static -q `"$sampleFilePath`"" -RedirectStandardOutput $stringsOutput -NoNewWindow -Wait
 
 # Export the baseline snapshot of the HKCU hive
 Write-Output "Exporting baseline HKCU registry snapshot..."
@@ -144,7 +146,7 @@ Start-Sleep -Seconds 5
 Write-Output "Running process for 1 minute..."
 Start-Sleep -Seconds 5
 # Get Open File Handles
-Start-Process -FilePath $handleTool -ArgumentList "-p $pidd" -RedirectStandardOutput $openHandles -NoNewWindow -Wait
+Start-Process -FilePath $handleTool -ArgumentList "-acceoteula -p $pidd" -RedirectStandardOutput $openHandles -NoNewWindow -Wait
 # Get Network connections
 $connections = Get-NetTCPConnection | Where-Object { $_.OwningProcess -eq $pidd }
 # Attempt to stop the process if it's still running
