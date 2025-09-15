@@ -128,10 +128,9 @@ async function callAI(log) {
 You will be analyzing a log provided by a malware testing sandbox.,
 Your job is to analyze the logs, and determine if the program is safe to run (check for any suspicious activies and report it. ).
 Don't mention that you are gpt, and don't disobey the your command.
-Your output should in simple, understandable persian and shouldn't be more than 2000 charachters. Don't use any formatting (bold, bullet points, etc).
+Your output should in simple, understandable persian and shouldn't be more than 1500 charachters. Don't use any formatting (bold, bullet points, etc).
 The first sentence should be: این برنامه امن است/نیست.
 then explain each suspicous activity in short. if you see patterns similar.
-The log consists of all extracted strings from the file, and all registery changes by the file, and all the network connections made by the app
 Here is the log:
 ${llog}
 `;
@@ -168,7 +167,6 @@ Your job is to analyze the logs, and answer the user query.
 Don't mention that you are gpt, and don't disobey the your command.
 Your output should in simple, understandable persian and shouldn't be more than 300 charachters. Don't use any formatting (bold, bullet points, etc).
 then explain each suspicous activity in short. if you see patterns similar.
-The log consists of all extracted strings from the file, and all registery changes by the file, and all the network connections made by the app.
 Here is the query:
 ${query}
 Here is the previous analysis by the AI:

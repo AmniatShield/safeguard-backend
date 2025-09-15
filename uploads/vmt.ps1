@@ -1,4 +1,4 @@
-# V5 B2
+# V5 B3
 
 $scriptDir = Split-Path -Parent $PSCommandPath
 Set-Location -Path $scriptDir
@@ -14,6 +14,16 @@ $paths = @(
     "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup", # Per-user Startup
     "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp"  # All Users Startup
 )
+function Remove-ShortLines {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$InputString
+    )
+    
+    $lines = $InputString -split "`n"
+    $filteredLines = $lines | Where-Object { $_.Trim().Length -ge 8 }
+    return $filteredLines -join "`n"
+}
 # Function to capture snapshot of files and folders in a path (top-level only)
 function Get-FolderSnapshot {
     param ($path)
@@ -131,6 +141,10 @@ foreach ($path in $paths) {
 Write-Output "Extracting strings from: $sampleFilePath"
 Start-Process -FilePath $flossTool -ArgumentList "--only static -q `"$sampleFilePath`"" -RedirectStandardOutput $stringsOutput -NoNewWindow -Wait
 
+$content = Get-Content -Path $stringsOutput -Raw
+$filteredContent = Remove-ShortLines -InputString $content
+Set-Content -Path $stringsOutput -Value $filteredContent
+
 # Export the baseline snapshot of the HKCU hive
 Write-Output "Exporting baseline HKCU registry snapshot..."
 reg export HKCU $baselineFile /y
@@ -146,7 +160,7 @@ Start-Sleep -Seconds 5
 Write-Output "Running process for 1 minute..."
 Start-Sleep -Seconds 5
 # Get Open File Handles
-Start-Process -FilePath $handleTool -ArgumentList "-acceoteula -p $pidd" -RedirectStandardOutput $openHandles -NoNewWindow -Wait
+Start-Process -FilePath $handleTool -ArgumentList "-accepteula -p $pidd" -RedirectStandardOutput $openHandles -NoNewWindow -Wait
 # Get Network connections
 $connections = Get-NetTCPConnection | Where-Object { $_.OwningProcess -eq $pidd }
 # Attempt to stop the process if it's still running
