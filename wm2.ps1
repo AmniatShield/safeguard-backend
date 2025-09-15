@@ -1,72 +1,99 @@
-# Specify the target process executable and Strings tool path
-$targetExe = "C:\Users\WarrioR\Desktop\worm.exe"  # <-- Change to your target process
-$stringsTool = "C:\Users\WarrioR\Desktop\strings64.exe"    # <-- Change to the path of Strings tool
+# PowerShell script for fast sandbox monitoring of file system changes
+# Run with administrative privileges for %ProgramData% and All Users Startup folder
 
-# Define output directory and file paths
-$outputDir    = "C:\Users\WarrioR\Desktop\AnalysisOutput"
-$stringsOutput = "$outputDir\StringsOutput.txt"
-$baselineFile = "$outputDir\HKCU_Baseline.reg"
-$postFile     = "$outputDir\HKCU_Post.reg"
-$diffFile     = "$outputDir\HKCU_Diff.txt"
-$ConnectionFile = "$outputDir\connect.txt"
+# Define paths to monitor
+$paths = @(
+    $env:LOCALAPPDATA,
+    $env:ProgramData,
+    "$env:USERPROFILE\Documents",
+    $env:TEMP,
+    $env:APPDATA,
+    "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup", # Per-user Startup
+    "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp"  # All Users Startup
+)
 
-# Ensure the output directory exists
-if (-not (Test-Path $outputDir)) {
-    New-Item -Path $outputDir -ItemType Directory | Out-Null
-}
-
-# Start the target process and capture the process object
-Write-Output "Starting target process: $targetExe"
-$process = Start-Process -FilePath $targetExe -PassThru
-
-# Allow the process to initialize
-Start-Sleep -Seconds 10
-
-# Extract strings from the target executable using the Strings tool
-Write-Output "Extracting strings from: $targetExe"
-Start-Process -FilePath $stringsTool -ArgumentList "-nobanner -n 6 -o -a -u `"$targetExe`"" -RedirectStandardOutput $stringsOutput -NoNewWindow -Wait
-
-# Export the baseline snapshot of the HKCU hive
-Write-Output "Exporting baseline HKCU registry snapshot..."
-reg export HKCU $baselineFile /y
-
-# Let the process run for some minute
-Write-Output "Running process for 2 minute..."
-Start-Sleep -Seconds 120
-
-# Capture network connections associated with the process after it has run
-$connections = Get-NetTCPConnection | Where-Object { $_.OwningProcess -eq $process.Id }
-
-# Attempt to stop the process if it's still running
-Write-Output "Stopping target process (PID: $($process.Id))..."
-try {
-    $process.Refresh()
-    if (-not $process.HasExited) {
-        Stop-Process -Id $process.Id -Force
-        Write-Output "Process stopped."
-    } else {
-        Write-Output "Process has already terminated."
+# Function to capture snapshot of files and folders in a path (top-level only)
+function Get-FolderSnapshot {
+    param ($path)
+    $snapshot = @{}
+    try {
+        if (-not (Test-Path $path)) {
+            return @{ "Error" = "Path does not exist" }
+        }
+        # Get top-level items only (no -Recurse)
+        $items = Get-ChildItem -Path $path -ErrorAction SilentlyContinue | 
+                 Select-Object Name, @{Name="ItemType";Expression={if ($_.PSIsContainer) {"Folder"} else {"File"}}}
+        $snapshot["Items"] = $items
+        return $snapshot
+    } catch {
+        return @{ "Error" = "Error accessing path: $_" }
     }
 }
-catch {
-    Write-Output "Error stopping process: $_"
+
+# Function to compare two snapshots and detect changes
+function Compare-Snapshots {
+    param ($before, $after, $path)
+    Write-Host "`nChanges in $path :"
+    if ($before.ContainsKey("Error") -or $after.ContainsKey("Error")) {
+        Write-Host "Cannot compare - Before: $($before["Error"]), After: $($after["Error"])"
+        return
+    }
+
+    $beforeNames = $before["Items"] | ForEach-Object { "$($_.ItemType):$($_.Name)" } | Sort-Object
+    $afterNames = $after["Items"] | ForEach-Object { "$($_.ItemType):$($_.Name)" } | Sort-Object
+
+    # Find new items
+    $newItems = $afterNames | Where-Object { $_ -notin $beforeNames }
+    # Find deleted items
+    $deletedItems = $beforeNames | Where-Object { $_ -notin $afterNames }
+
+    if ($newItems.Count -eq 0 -and $deletedItems.Count -eq 0) {
+        Write-Host "No changes detected"
+    } else {
+        if ($newItems.Count -gt 0) {
+            Write-Host "New items:"
+            $newItems | ForEach-Object { Write-Host "  $_" }
+        }
+        if ($deletedItems.Count -gt 0) {
+            Write-Host "Deleted items:"
+            $deletedItems | ForEach-Object { Write-Host "  $_" }
+        }
+    }
 }
 
-# Output the connections to file
-$connections | Format-Table -Property LocalAddress, LocalPort, RemoteAddress, RemotePort, State | Out-File -FilePath $ConnectionFile
+# Stage 1: Take snapshot before execution
+$beforeSnapshots = @{}
+Write-Host "Taking snapshot before execution..."
+foreach ($path in $paths) {
+    $beforeSnapshots[$path] = Get-FolderSnapshot -path $path
+}
 
-# Export the post-process snapshot of the HKCU hive
-Write-Output "Exporting post-process HKCU registry snapshot..."
-reg export HKCU $postFile /y
+# Stage 2: Execute the uploaded file and wait 10 seconds, then kill the process
+Write-Host "`nExecuting uploaded file..."
 
-# Compare the two registry snapshots
-Write-Output "Comparing registry snapshots..."
-$baselineContent = Get-Content $baselineFile -ErrorAction SilentlyContinue
-$postContent     = Get-Content $postFile -ErrorAction SilentlyContinue
-$diff = Compare-Object -ReferenceObject $baselineContent -DifferenceObject $postContent
+# Start the script as a separate process
+$process = Start-Process -FilePath "powershell.exe" -ArgumentList "-File `"$tempScriptPath`"" -PassThru -ErrorAction SilentlyContinue
+Write-Host "Started process with ID: $($process.Id)"
 
-# Save the differences to a diff file
-$diff | Out-File -FilePath $diffFile
+# Wait for 10 seconds
+Start-Sleep -Seconds 10
 
-Write-Output "Strings extraction completed. Output saved to: $stringsOutput"
-Write-Output "Registry changes have been logged to: $diffFile"
+# Terminate the process
+Write-Host "Terminating process..."
+Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+Write-Host "Process terminated."
+
+# Stage 3: Take snapshot after execution
+$afterSnapshots = @{}
+Write-Host "`nTaking snapshot after execution..."
+foreach ($path in $paths) {
+    $afterSnapshots[$path] = Get-FolderSnapshot -path $path
+}
+
+# Stage 4: Compare snapshots
+Write-Host "`nComparing snapshots..."
+foreach ($path in $paths) {
+    Compare-Snapshots -before $beforeSnapshots[$path] -after $afterSnapshots[$path] -path $path
+}
+
+Write-Host "`nScript execution completed."
