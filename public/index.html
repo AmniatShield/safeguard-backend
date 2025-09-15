@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="./browser@4.js"></script>
     <style>
-        body{
-            color: white;
-            font-family: 'Vazir', 'Vazirmatn', 'JetBrains Mono';
-        }
-        #input-box input[type="file"] {
+      body {
+        color: white;
+        font-family: "Vazir", "Vazirmatn", "JetBrains Mono";
+      }
+      #input-box input[type="file"] {
         appearance: none;
         margin-top: 10px;
         padding: 10px;
@@ -18,101 +18,146 @@
         background-color: #032b44;
         color: #ffffff;
         cursor: pointer;
-        }
-        .hide{
-            display: none;
-        }
-        #aiDescP {
-            padding: 20px;
-        }
-        #ads {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 10px;
-            background-color: gray;
-            margin-bottom: 35px;
-        }
-        #adsPlace {
-            font-size: 30px;
-            padding: 50px;
-            padding-right: 180px;
-            padding-left: 180px;
-        }
-        #footer {
-            position: absolute;
-            display: flex;
-            width: 100%;
-            margin: 0;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            bottom: 0;
-        }
-        #aiDesc {
-            text-align: right;
-            direction: rtl;
-        }
-        .message {
-            text-align: right;
-            direction: rtl;
-        }
-        #send {
-            transition: 0.3s;
-        }
-        #send:hover {
-            color: rgb(31 41 55);
-            background-color: rgb(168 85 247);
-        }
-        #text {
-            outline: none;
-            border: none;
-        }
+      }
+      .hide {
+        display: none;
+      }
+      #aiDescP {
+        padding: 20px;
+      }
+      #ads {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
+        background-color: gray;
+        margin-bottom: 35px;
+      }
+      #adsPlace {
+        font-size: 30px;
+        padding: 50px;
+        padding-right: 180px;
+        padding-left: 180px;
+      }
+      #footer {
+        position: absolute;
+        display: flex;
+        width: 100%;
+        margin: 0;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        bottom: 0;
+      }
+      #aiDesc {
+        text-align: right;
+        direction: rtl;
+      }
+      .message {
+        text-align: right;
+        direction: rtl;
+      }
+      #send {
+        transition: 0.3s;
+      }
+      #send:hover {
+        color: rgb(31 41 55);
+        background-color: rgb(168 85 247);
+      }
+      #text {
+        outline: none;
+        border: none;
+      }
     </style>
     <title>Trust Guard</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="shortcut icon" href="ASRaw.png" type="image/x-icon">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-</head>
-<body class="bg-slate-950">
-    <iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="shortcut icon" href="ASRaw.png" type="image/x-icon" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body class="bg-slate-950">
+    <iframe name="dummyframe" id="dummyframe" style="display: none"></iframe>
     <div id="content" class="flex lg:flex-row flex-col items-center h-[512px]">
-        <div id="loading"  class="w-full hide">
-            <div class="preloader">
-                <div class="loader">
-                    <span class="text">در حال تحلیل</span>
-                </div>
-            </div>
+      <div id="loading" class="w-full hide">
+        <div class="preloader">
+          <div class="loader">
+            <span class="text">در حال تحلیل</span>
+          </div>
         </div>
-        <div id="security" class="w-full">
-            <div class="flex w-98 items-end m-auto" id="title">
-                <div class="text-red-700 font-bold text-5xl text-center tracking-wider w-72 m-auto relative bottom-5 mt-25" >Trust</div>
-                <div class="flex flex-col jusify-end"><img width="450px" height="450px" src="./AS2.png" alt=""></div>
-                <div class="text-red-700 font-bold text-5xl text-center tracking-wider w-72 m-auto relative bottom-5 mt-25" id="title">Guard</div>
-            </div>
-            <div id="input-box" class="lg:w-90 md:w-90 w-80 h-40 bg-gray-900 m-auto rounded-xl mt-5 flex flex-col justify-center items-center shadow-2xl transition-all duration-300 hover:scale-[1.05]">
-                <div class="text-lg text-slate-300 pb-2">فایل خود را وارد کنید</div>
-                <form class="flex justify-center items-center" action="/upload" method="post" enctype="multipart/form-data" name="fileform" target="dummyframe">
-                    <input class="w-4/5 m-auto"  type="file" id="input-btn" name="file">
-                </form>
-                
-            </div>
-    
-            <div id="output-box" class="hide flex lg:flex-col md:flex-col flex-col items-center gap-5 justify-around mt-20 lg:w-3/4 md:w-5/6 w-full m-auto">
-                
-                <div id="result" class="lg:w-94 md:w-80 w-66 text-slate-300 rounded-xl text-center min-h-53 bg-gray-900 border-[2px] border-solid border-red-700 flex flex-col justify-around items-start" style="align-items: center; justify-content: center;">
-                    <div class="pr-5 text-5xl text-red-500" style="padding: 10px;"><i class="fa-regular fa-file"></i></div>
-                    <div class="pr-5 text-xl text-red-500" id="fileName">file.exe</div>
-                    <div class="pr-5 text-xl text-red-500" id="fileSize">0 MB</div>
-                    <div class="pr-5 text-l text-red-500" id="fileHash"><code>test hash</code></div>
-                </div>
+      </div>
+      <div id="security" class="w-full">
+        <div class="flex w-98 items-end m-auto" id="title">
+          <div
+            class="text-red-700 font-bold text-5xl text-center tracking-wider w-72 m-auto relative bottom-5 mt-25"
+          >
+            Trust
+          </div>
+          <div class="flex flex-col jusify-end">
+            <img width="450px" height="450px" src="./AS2.png" alt="" />
+          </div>
+          <div
+            class="text-red-700 font-bold text-5xl text-center tracking-wider w-72 m-auto relative bottom-5 mt-25"
+            id="title"
+          >
+            Guard
+          </div>
+        </div>
+        <div
+          id="input-box"
+          class="lg:w-90 md:w-90 w-80 h-40 bg-gray-900 m-auto rounded-xl mt-5 flex flex-col justify-center items-center shadow-2xl transition-all duration-300 hover:scale-[1.05]"
+        >
+          <div class="text-lg text-slate-300 pb-2">فایل خود را وارد کنید</div>
+          <form
+            class="flex justify-center items-center"
+            action="/upload"
+            method="post"
+            enctype="multipart/form-data"
+            name="fileform"
+            target="dummyframe"
+          >
+            <input
+              class="w-4/5 m-auto"
+              type="file"
+              id="input-btn"
+              name="file"
+              accept=".exe"
+            />
+          </form>
+        </div>
 
-                <div id="exp" class="lg:w-150 md:w-80 w-66 text-slate-300 rounded-xl text-center min-h-53 bg-gray-900 border-[2px] border-solid border-yellow-600">
-                    <div class="pt-5 text-2xl text-yellow-500">توضیحات :</div>
-                    <div class="text-xl text-white-600 pt-5" id="aiDesc">....</div>
-                </div>
-                
-                <!-- <div id="ai" class="lg:w-94 md:w-56 w-66 text-slate-300 rounded-xl text-center h-53 bg-gray-900 border-[2px] border-solid border-purple-900 overflow-scroll">
+        <div
+          id="output-box"
+          class="hide flex lg:flex-col md:flex-col flex-col items-center gap-5 justify-around mt-20 lg:w-3/4 md:w-5/6 w-full m-auto"
+        >
+          <div
+            id="result"
+            class="lg:w-94 md:w-80 w-66 text-slate-300 rounded-xl text-center min-h-53 bg-gray-900 border-[2px] border-solid border-red-700 flex flex-col justify-around items-start"
+            style="align-items: center; justify-content: center"
+          >
+            <div class="pr-5 text-5xl text-red-500" style="padding: 10px">
+              <i class="fa-regular fa-file"></i>
+            </div>
+            <div class="pr-5 text-xl text-red-500" id="fileName">file.exe</div>
+            <div class="pr-5 text-xl text-red-500" id="fileSize">0 MB</div>
+            <div class="pr-5 text-l text-red-500" id="fileHash">
+              <code>test hash</code>
+            </div>
+          </div>
+
+          <div
+            id="exp"
+            class="lg:w-150 md:w-80 w-66 text-slate-300 rounded-xl text-center min-h-53 bg-gray-900 border-[2px] border-solid border-yellow-600"
+          >
+            <div class="pt-5 text-2xl text-yellow-500">توضیحات :</div>
+            <div class="text-xl text-white-600 pt-5" id="aiDesc">....</div>
+          </div>
+
+          <!-- <div id="ai" class="lg:w-94 md:w-56 w-66 text-slate-300 rounded-xl text-center h-53 bg-gray-900 border-[2px] border-solid border-purple-900 overflow-scroll">
                     <div class="pt-5 text-2xl text-purple-500">هوش مصنوعی :</div>
                     <div id="ai-chat" class="w-11/12 m-auto pt-3">
                         <div class="text-sm text-white-950 mt-5 text-left bg-gray-800 p-2 mb-2 rounded-tl-xl rounded-tr-xl rounded-br-xl">سلام! چطور میتوانم کمکتان کنم؟</div>
@@ -122,27 +167,48 @@
                         <input id="send" class="w-2/12 bg-gray-300 rounded-bl-md rounded-tl-md" type="button" value="ارسال">
                     </div>
                 </div> -->
-            </div>
         </div>
-        <div id="ai" class="lg:w-4/12 md:w-5/6 flex flex-col h-full lg:m-0 mt-10 hide">
-            <div id="ai" class="lg:w-full md:w-full h-full w-66 text-slate-300 rounded-tl-xl lg:rounded-tr-none rounded-tr-xl text-center lg:h-full h-70 bg-gray-900 overflow-x-hidden overflow-auto">
-                <div class="pt-5 text-2xl text-purple-500">هوش مصنوعی</div>
-                <div id="ai-chat" class="w-11/12 m-auto pt-3">
-                    <div class="text-sm text-white-950 mt-5 text-left bg-gray-800 p-2 mb-2 rounded-tl-xl rounded-tr-xl rounded-br-xl">سلام! چطور میتوانم کمکتان کنم؟</div>
-                </div>
+      </div>
+      <div
+        id="ai"
+        class="lg:w-4/12 md:w-5/6 flex flex-col h-full lg:m-0 mt-10 hide"
+      >
+        <div
+          id="ai"
+          class="lg:w-full md:w-full h-full w-66 text-slate-300 rounded-tl-xl lg:rounded-tr-none rounded-tr-xl text-center lg:h-full h-70 bg-gray-900 overflow-x-hidden overflow-auto"
+        >
+          <div class="pt-5 text-2xl text-purple-500">هوش مصنوعی</div>
+          <div id="ai-chat" class="w-11/12 m-auto pt-3">
+            <div
+              class="text-sm text-white-950 mt-5 text-left bg-gray-800 p-2 mb-2 rounded-tl-xl rounded-tr-xl rounded-br-xl"
+            >
+              سلام! چطور میتوانم کمکتان کنم؟
             </div>
-            <div class="w-full text-red-800 flex justify-around items-end m-auto h-[50px]">
-                <input id="send" class="w-2/12 text-purple-500 bg-gray-800 rounded-bl-md h-full" type="button" value="ارسال">
-                <input class="w-10/12 text-slate-300 bg-gray-700 h-full" type="text" name="" id="text">
-            </div>
+          </div>
         </div>
-        
+        <div
+          class="w-full text-red-800 flex justify-around items-end m-auto h-[50px]"
+        >
+          <input
+            id="send"
+            class="w-2/12 text-purple-500 bg-gray-800 rounded-bl-md h-full"
+            type="button"
+            value="ارسال"
+          />
+          <input
+            class="w-10/12 text-slate-300 bg-gray-700 h-full"
+            type="text"
+            name=""
+            id="text"
+          />
+        </div>
+      </div>
     </div>
-   <div id="footer" class="m-auto">
-    <div id="ads" class="m-auto">
+    <div id="footer" class="m-auto">
+      <div id="ads" class="m-auto">
         <p id="adsPlace" class="m-auto">محل تبلیغات</p>
+      </div>
     </div>
-   </div>
     <script src="./script.js"></script>
-</body >
+  </body>
 </html>
