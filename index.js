@@ -170,7 +170,7 @@ Your output should in simple, understandable persian and shouldn't be more than 
 DO NOT REPEAT THE PREVIOUS ANALYSIS. ONLY ANSWER THE QUERY DIRECTLY.
 Here is the previous analysis by the AI:
 ${results2}
-Here is the query (question) by the user, you should explain this to the user:
+MOST IMPORTANT, YOUR SOLE JOB IS TO ANSWER THIS QUESTION, Don't be like "Not enough info" or whatever just answer it : Here is the query (question) by the user, you should explain this to the user:
 ${query}
 
 
