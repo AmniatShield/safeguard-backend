@@ -166,14 +166,16 @@ You will be analyzing a log provided by a malware testing sandbox, and answering
 Your job is to analyze the logs, and answer the user question.
 Don't mention that you are gpt, and don't disobey the your command.
 Your output should in simple, understandable persian and shouldn't be more than 300 charachters. Don't use any formatting (bold, bullet points, etc).
+
 DO NOT REPEAT THE PREVIOUS ANALYSIS. ONLY ANSWER THE QUERY DIRECTLY.
 Here is the previous analysis by the AI:
 ${results2}
-and here is the log:
-${analysis_log}
-Here is the query (question) by the user:
+Here is the query (question) by the user, you should explain this to the user:
 ${query}
 
+
+and here is the log:
+${analysis_log}
 
 `;
   const chatCompletion = await openai.chat.completions.create({
