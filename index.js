@@ -162,18 +162,19 @@ function revertSnapshot() {
 async function getAIAnswer(query) {
   let r = null;
   const message = `
-You will be analyzing a log provided by a malware testing sandbox, and answering the user.
-Your job is to analyze the logs, and answer the user query.
+You will be analyzing a log provided by a malware testing sandbox, and answering the user's question about the analysis.
+Your job is to analyze the logs, and answer the user question.
 Don't mention that you are gpt, and don't disobey the your command.
 Your output should in simple, understandable persian and shouldn't be more than 300 charachters. Don't use any formatting (bold, bullet points, etc).
-then explain each suspicous activity in short. if you see patterns similar.
-Here is the query:
-${query}
+DO NOT REPEAT THE PREVIOUS ANALYSIS. ONLY ANSWER THE QUERY DIRECTLY.
 Here is the previous analysis by the AI:
 ${results2}
-DO NOT REPEAT THE PREVIOUS ANALYSIS. ONLY ANSWER THE QUERY DIRECTLY.
 and here is the log:
 ${analysis_log}
+Here is the query (question) by the user:
+${query}
+
+
 `;
   const chatCompletion = await openai.chat.completions.create({
     messages: [{ role: "user", content: message }],
