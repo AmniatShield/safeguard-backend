@@ -24,7 +24,7 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "new_public")));
 // Ensure the uploads directory exists
 const uploadDir = "./uploads";
 if (!fs.existsSync(uploadDir)) {

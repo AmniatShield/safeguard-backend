@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trust Guard</title>
+    <link rel="shortcut icon" href="ASRaw.png" type="image/x-icon" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="./browser@4.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <iframe name="dummyframe" id="dummyframe" class="hidden"></iframe>
+    <div id="content">
+      <div id="loading" class="hidden">
+        <div class="preloader">
+          <div class="loader">
+            <span class="text">در حال تحلیل</span>
+          </div>
+        </div>
+      </div>
+      <div id="security">
+        <div id="title">
+          <img src="./AS2.png" alt="Logo" />
+        </div>
+        <div
+          id="input-box"
+          ondragover="event.preventDefault(); this.classList.add('border-purple');"
+          ondragleave="this.classList.remove('border-purple');"
+          ondrop="handleDrop(event); this.classList.remove('border-purple');"
+        >
+          <p>فایل خود را وارد کنید یا بکشید و رها کنید</p>
+          <form
+            action="/upload"
+            method="post"
+            enctype="multipart/form-data"
+            name="fileform"
+            target="dummyframe"
+          >
+            <input type="file" id="input-btn" name="file" accept=".exe" />
+          </form>
+        </div>
+        <div id="output-box" class="hidden">
+          <div class="result">
+            <h2>اطلاعات فایل</h2>
+            <div class="file-details">
+              <i class="fa-regular fa-file"></i>
+              <p id="fileName"></p>
+              <p id="fileSize"></p>
+              <div class="hash-container">
+                <p id="fileHash"><code></code></p>
+                <button onclick="copyHash()"><i class="fa fa-copy"></i></button>
+              </div>
+            </div>
+          </div>
+          <div id="exp">
+            <h2>توضیحات هوش مصنوعی:</h2>
+            <div id="aiDesc"></div>
+          </div>
+          <div class="extra-features">
+            <div class="tips">
+              <h2>نکات امنیتی</h2>
+              <ul>
+                <li>همیشه فایل‌های ناشناخته را بررسی کنید.</li>
+                <li>از آنتی‌ویروس به‌روز استفاده کنید.</li>
+                <li>دانلود از منابع معتبر.</li>
+              </ul>
+            </div>
+            <div class="additional">
+              <h2>ویژگی‌های اضافی</h2>
+              <p>
+                این ابزار از هوش مصنوعی برای تحلیل بدافزار استفاده می‌کند. برای
+                اطلاعات بیشتر، در چت بپرسید.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="ai-section" class="hidden">
+        <div class="ai-header"><i class="fa fa-robot"></i> هوش مصنوعی</div>
+        <div id="ai-chat"></div>
+        <div class="chat-input">
+          <input id="text" type="text" placeholder="پیام خود را بنویسید..." />
+          <button id="send">ارسال <i class="fa fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+    <script src="./script.js"></script>
+  </body>
+</html>
