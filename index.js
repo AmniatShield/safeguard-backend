@@ -99,8 +99,7 @@ app.get("/update", async (req, res) => {
     })
   );
   if (results != null) {
-    uploadedFileName = "";
-    results = null;
+    reset();
   }
 });
 
@@ -115,6 +114,18 @@ app.post("/ai", async (req, res) => {
   let b = await getAIAnswer(req.body.message);
   res.send(JSON.stringify({ result: b }));
 });
+
+app.get("/reset", async (req, res) => {
+  reset();
+});
+function reset() {
+  uploadedFileName = "vmt.ps1";
+  results = null;
+  results2 = null;
+  analysis_log = null;
+  const process = exec(`sudo virsh shutdown ${vmname}`);
+  console.log(`[${currentTime()}] Reset!`);
+}
 // Start the server
 app.listen(port, () => {
   console.log(`[${currentTime()}] Server running at http://localhost:${port}`);
