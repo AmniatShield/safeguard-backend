@@ -3,93 +3,492 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trust Guard</title>
-    <link rel="shortcut icon" href="ASRaw.png" type="image/x-icon" />
-    <link rel="stylesheet" href="styles.css" />
-    <script src="./browser@4.js"></script>
+    <title>Trust Guard | تحلیل بدافزار</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome for Icons -->
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
+
+    <link rel="shortcut icon" href="./ASRaw.png" type="image/x-icon" />
+
+    <style>
+      /* Set the default font for the entire page */
+      * {
+        font-family: "Vazir", "Vazirmatn", sans-serif;
+      }
+      body {
+        position: relative; /* Needed for background animation */
+      }
+
+      /* ===== Animated Background ===== */
+      .background-animation {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(rgba(2, 6, 23, 0.97), rgba(2, 6, 23, 0.97)),
+          url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        background-size: 200px 200px;
+        animation: pan-background 40s linear infinite;
+        z-index: 0;
+      }
+
+      @keyframes pan-background {
+        0% {
+          background-position: 0% 0%;
+        }
+        100% {
+          background-position: 100% 100%;
+        }
+      }
+
+      .logo-animation {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-15px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+
+      .upload-box-animation {
+        animation: pulse-border 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      @keyframes pulse-border {
+        0%,
+        100% {
+          border-color: #b91c1c; /* red-700 */
+        }
+        50% {
+          border-color: #ef4444; /* red-500 */
+        }
+      }
+
+      /* ===== NEW Sophisticated Loader ===== */
+      .scanner {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+        background: url() no-repeat center center;
+        background-size: 60%;
+        border-radius: 50%;
+      }
+      .scanner::before,
+      .scanner::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        border: 3px solid transparent;
+        box-sizing: border-box;
+      }
+      .scanner::before {
+        width: 100%;
+        height: 100%;
+        border-top-color: #05ff2d;
+        border-bottom-color: #05ff2d;
+        animation: rotate-scanner 3s linear infinite;
+      }
+      .scanner::after {
+        width: 85%;
+        height: 85%;
+        border-right-color: #00e676;
+        border-left-color: #00e676;
+        animation: rotate-scanner 2s linear reverse infinite;
+      }
+      .scanner span {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to top, transparent, #08ff87);
+        border-radius: 50%;
+        animation: rotate-scanner-span 4s linear infinite;
+        transform-origin: center;
+        mask-image: linear-gradient(to top, transparent 40%, black 90%);
+        -webkit-mask-image: linear-gradient(to top, transparent 40%, black 90%);
+      }
+
+      @keyframes rotate-scanner {
+        to {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+      @keyframes rotate-scanner-span {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Custom scrollbar for the AI chat box */
+      #ai-chat-box::-webkit-scrollbar {
+        width: 8px;
+      }
+      #ai-chat-box::-webkit-scrollbar-track {
+        background: #1f2937; /* gray-800 */
+      }
+      #ai-chat-box::-webkit-scrollbar-thumb {
+        background-color: #8b5cf6; /* violet-500 */
+        border-radius: 10px;
+        border: 2px solid #1f2937;
+      }
+    </style>
   </head>
-  <body>
+
+  <body class="bg-slate-950 text-slate-300 font-sans overflow-hidden">
+    <!-- Animated background -->
+    <div class="background-animation"></div>
+
+    <!-- Dummy iframe for form submission without page reload -->
     <iframe name="dummyframe" id="dummyframe" class="hidden"></iframe>
-    <div id="content">
-      <div id="loading" class="hidden">
-        <div class="preloader">
-          <div class="loader">
-            <span class="text">در حال تحلیل</span>
-          </div>
-        </div>
-      </div>
-      <div id="security">
-        <div id="title">
-          <img src="./AS2.png" alt="Logo" />
-        </div>
-        <div
-          id="input-box"
-          ondragover="event.preventDefault(); this.classList.add('border-purple');"
-          ondragleave="this.classList.remove('border-purple');"
-          ondrop="handleDrop(event); this.classList.remove('border-purple');"
+
+    <main
+      class="container mx-auto p-4 min-h-screen flex flex-col justify-center items-center relative z-10"
+    >
+      <!-- ===== UPLOAD VIEW ===== -->
+      <div id="upload-view" class="w-full max-w-2xl text-center">
+        <!-- Debug Button -->
+        <button
+          id="debug-btn"
+          class="absolute top-4 right-4 bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-md text-sm border border-yellow-500/30 hover:bg-yellow-500/40 transition"
         >
-          <p>فایل خود را وارد کنید یا بکشید و رها کنید</p>
-          <form
-            action="/upload"
-            method="post"
-            enctype="multipart/form-data"
-            name="fileform"
-            target="dummyframe"
-          >
-            <input type="file" id="input-btn" name="file" accept=".exe" />
-          </form>
+          <i class="fa-solid fa-bug mr-2"></i> حالت دیباگ
+        </button>
+
+        <div class="flex justify-center items-center mb-16">
+          <img
+            width="250px"
+            height="250px"
+            src="AS2.png"
+            alt="Amniat Shield Logo"
+            class="logo-animation"
+          />
         </div>
-        <div id="output-box" class="hidden">
-          <div class="result">
-            <h2>اطلاعات فایل</h2>
-            <div class="file-details">
-              <i class="fa-regular fa-file"></i>
-              <p id="fileName"></p>
-              <p id="fileSize"></p>
-              <div class="hash-container">
-                <p id="fileHash"><code></code></p>
-                <button onclick="copyHash()"><i class="fa fa-copy"></i></button>
+
+        <form
+          id="file-form"
+          action="/upload"
+          method="post"
+          enctype="multipart/form-data"
+          target="dummyframe"
+        >
+          <label
+            for="file-input"
+            class="w-full h-48 bg-gray-900/50 border-2 border-dashed border-red-700 rounded-xl flex flex-col justify-center items-center cursor-pointer transition-all duration-300 hover:bg-gray-800/60 hover:border-red-500 upload-box-animation"
+          >
+            <i
+              class="fa-solid fa-cloud-arrow-up text-5xl text-red-500 mb-4"
+            ></i>
+            <span class="text-xl"
+              >برای آپلود فایل کلیک کنید یا فایل را اینجا بکشید</span
+            >
+            <span class="text-slate-500 mt-2"
+              >فقط فایل‌های .exe پشتیبانی می‌شوند</span
+            >
+          </label>
+          <input
+            type="file"
+            id="file-input"
+            name="file"
+            accept=".exe"
+            class="hidden"
+          />
+        </form>
+      </div>
+
+      <!-- ===== LOADING VIEW ===== -->
+      <div id="loading-view" class="hidden text-center">
+        <div class="scanner"><span></span></div>
+        <p class="text-2xl mt-8 font-bold text-green-400">درحال تحلیل</p>
+        <p class="text-slate-400">این فرآیند ممکن است چند لحظه طول بکشد</p>
+      </div>
+
+      <!-- ===== RESULTS VIEW ===== -->
+      <div
+        id="results-view"
+        class="hidden w-full max-w-7xl h-[85vh] grid grid-cols-1 lg:grid-cols-3 gap-6"
+      >
+        <!-- Analysis Report -->
+        <div
+          class="lg:col-span-2 bg-gray-900/80 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 flex flex-col"
+        >
+          <h2
+            class="text-2xl font-bold text-yellow-400 mb-4 border-b-2 border-yellow-400/20 pb-2 flex items-center gap-x-3"
+          >
+            <i class="fa-solid fa-align-justify w-6 text-center"></i>
+            <span>گزارش تحلیل</span>
+          </h2>
+          <div class="space-y-4 mb-6">
+            <!-- File Details Card -->
+            <div
+              class="bg-slate-800/50 p-4 rounded-lg border border-slate-700 grid grid-cols-1 md:grid-cols-3 gap-3 text-center md:text-right"
+            >
+              <div>
+                <p class="text-sm text-slate-400">نام فایل</p>
+                <p id="fileName" class="font-mono text-lg truncate">--</p>
+              </div>
+              <div>
+                <p class="text-sm text-slate-400">اندازه</p>
+                <p id="fileSize" class="font-mono text-lg">--</p>
+              </div>
+              <div>
+                <p class="text-sm text-slate-400">هش MD5</p>
+                <p id="fileHash" class="font-mono text-sm">--</p>
               </div>
             </div>
-          </div>
-          <div id="exp">
-            <h2>توضیحات هوش مصنوعی:</h2>
-            <div id="aiDesc"></div>
-          </div>
-          <div class="extra-features">
-            <div class="tips">
-              <h2>نکات امنیتی</h2>
-              <ul>
-                <li>همیشه فایل‌های ناشناخته را بررسی کنید.</li>
-                <li>از آنتی‌ویروس به‌روز استفاده کنید.</li>
-                <li>دانلود از منابع معتبر.</li>
-              </ul>
-            </div>
-            <div class="additional">
-              <h2>ویژگی‌های اضافی</h2>
-              <p>
-                این ابزار از هوش مصنوعی برای تحلیل بدافزار استفاده می‌کند. برای
-                اطلاعات بیشتر، در چت بپرسید.
-              </p>
+            <!-- AI Description Card -->
+            <div
+              class="bg-slate-800/50 p-4 rounded-lg border border-slate-700 flex-grow"
+            >
+              <p class="text-sm text-slate-400 mb-2">خلاصه تحلیل هوش مصنوعی</p>
+              <p id="aiDesc" class="leading-relaxed text-slate-300"></p>
             </div>
           </div>
         </div>
-      </div>
-      <div id="ai-section" class="hidden">
-        <div class="ai-header"><i class="fa fa-robot"></i> هوش مصنوعی</div>
-        <div id="ai-chat"></div>
-        <div class="chat-input">
-          <input id="text" type="text" placeholder="پیام خود را بنویسید..." />
-          <button id="send">ارسال <i class="fa fa-paper-plane"></i></button>
+
+        <!-- AI Chat -->
+        <div
+          class="lg:col-span-1 bg-gray-900/80 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 flex flex-col h-full"
+        >
+          <h2
+            class="text-2xl font-bold text-purple-400 mb-4 border-b-2 border-purple-400/20 pb-2 flex items-center gap-x-3"
+          >
+            <i class="fa-solid fa-server w-6 text-center"></i>
+            <span>دستیار هوش مصنوعی</span>
+          </h2>
+          <div
+            id="ai-chat-box"
+            class="flex-grow overflow-y-auto pr-2 mb-4 flex flex-col"
+          >
+            <!-- Messages will be injected here -->
+          </div>
+          <div class="flex items-center gap-2">
+            <input
+              id="chat-input"
+              type="text"
+              class="w-full bg-gray-700 text-slate-300 rounded-md py-2 px-3 outline-none border-2 border-transparent focus:border-purple-500 transition"
+              placeholder="سوال خود را بپرسید..."
+            />
+            <button
+              id="send-btn"
+              class="bg-purple-600 rounded-md h-full px-4 text-white transition-all duration-300 hover:bg-purple-700"
+            >
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-    <script src="./script.js"></script>
+    </main>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // --- DOM ELEMENTS ---
+        const fileInput = document.getElementById("file-input");
+        const fileForm = document.getElementById("file-form");
+        const sendBtn = document.getElementById("send-btn");
+        const chatInput = document.getElementById("chat-input");
+        const chatBox = document.getElementById("ai-chat-box");
+        const debugBtn = document.getElementById("debug-btn");
+
+        const views = {
+          upload: document.getElementById("upload-view"),
+          loading: document.getElementById("loading-view"),
+          results: document.getElementById("results-view"),
+        };
+
+        const resultFields = {
+          fileName: document.getElementById("fileName"),
+          fileSize: document.getElementById("fileSize"),
+          fileHash: document.getElementById("fileHash"),
+          aiDesc: document.getElementById("aiDesc"),
+        };
+
+        // --- STATE MANAGEMENT ---
+        let pollingInterval;
+
+        /**
+         * Hides all views and shows the specified view.
+         * @param {('upload'|'loading'|'results')} viewName The name of the view to show.
+         */
+        const showView = (viewName) => {
+          Object.values(views).forEach((view) => view.classList.add("hidden"));
+          if (views[viewName]) {
+            views[viewName].classList.remove("hidden");
+          }
+        };
+
+        // --- CORE API & APP LOGIC ---
+
+        /**
+         * Handles the file selection event.
+         */
+        const handleFileSelect = () => {
+          if (!fileInput.files || fileInput.files.length === 0) return;
+
+          showView("loading");
+          fileForm.submit(); // <-- YOUR API-RELATED CODE (UNCHANGED)
+
+          // Start polling for results from the server
+          pollingInterval = setInterval(pollForResults, 2000); // Poll every 2 seconds
+        };
+
+        /**
+         * Fetches updates from the server until results are available.
+         */
+        const pollForResults = () => {
+          fetch("/update") // <-- YOUR API-RELATED CODE (UNCHANGED)
+            .then((response) => {
+              if (!response.ok) throw new Error("Network response was not ok");
+              return response.json();
+            })
+            .then((data) => {
+              if (data.results != null) {
+                clearInterval(pollingInterval);
+                displayResults(data);
+                showView("results");
+              } else {
+                console.log("Analysis in progress...");
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching data:", error);
+              clearInterval(pollingInterval);
+              // Using a simple browser alert for error feedback
+              alert("خطایی در تحلیل فایل رخ داد. لطفا دوباره تلاش کنید.");
+              showView("upload"); // Go back to upload view on error
+            });
+        };
+
+        /**
+         * Handles sending a message to the AI chatbot.
+         */
+        const handleSendMessage = async () => {
+          const messageText = chatInput.value.trim();
+          if (!messageText) return;
+
+          appendMessage(messageText, "user");
+          chatInput.value = "";
+
+          try {
+            // <-- YOUR API-RELATED CODE (UNCHANGED)
+            const response = await fetch("/ai", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ message: messageText }),
+            });
+            if (!response.ok) throw new Error("AI API response was not ok");
+            const data = await response.json();
+            appendMessage(data.result, "ai");
+          } catch (error) {
+            console.error("Error with AI chat:", error);
+            appendMessage(
+              "متاسفانه در ارتباط با هوش مصنوعی مشکلی پیش آمد.",
+              "ai-error"
+            );
+          }
+        };
+
+        /**
+         * Shows dummy data for debugging purposes.
+         */
+        const showDummyResults = () => {
+          console.log(
+            "Debug Mode Activated: Bypassing upload and showing dummy data."
+          );
+
+          if (pollingInterval) clearInterval(pollingInterval);
+
+          const dummyData = {
+            fileName: "trojan_horse.exe",
+            fileSize: 4.2,
+            fileHash: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+            results:
+              "این فایل یک تروجان شناسایی شده است که تلاش می‌کند به عنوان یک برنامه قانونی ظاهر شود. پس از اجرا، در پس‌زمینه فرآیندهای مخفی ایجاد کرده و تلاش می‌کند تا از طریق پورت 443 با یک سرور کنترل و فرمان (C2) در آدرس 198.51.100.10 ارتباط برقرار کند. این بدافزار قابلیت ثبت کلیدهای فشرده شده (Keylogging) را دارد و به دنبال سرقت اطلاعات حساس مانند رمزهای عبور ذخیره شده در مرورگرها است. توصیه می‌شود این فایل را فورا حذف کرده و سیستم خود را برای هرگونه نفوذ بیشتر اسکن کنید.",
+          };
+
+          displayResults(dummyData);
+          showView("results");
+        };
+
+        // --- HELPER FUNCTIONS ---
+
+        /**
+         * Populates the results view with data from the server.
+         * @param {object} data The data object from the /update endpoint.
+         */
+        const displayResults = (data) => {
+          resultFields.fileName.textContent = data.fileName || "N/A";
+          resultFields.fileSize.textContent =
+            `${Number(data.fileSize).toFixed(2)} MB` || "0 MB";
+          resultFields.fileHash.textContent = data.fileHash || "N/A";
+          resultFields.aiDesc.textContent =
+            data.results || "No description available.";
+        };
+
+        /**
+         * Appends a new message to the AI chat box.
+         * @param {string} text The message content.
+         * @param {('user'|'ai'|'ai-error')} sender The sender of the message.
+         */
+        const appendMessage = (text, sender) => {
+          const messageDiv = document.createElement("div");
+          let baseClasses = "p-3 rounded-xl max-w-[85%] mb-2";
+
+          if (sender === "user") {
+            messageDiv.className = `${baseClasses} bg-purple-600 text-white self-end rounded-br-none`;
+            messageDiv.style.alignSelf = "flex-start"; // RTL: user messages on the left
+          } else if (sender === "ai") {
+            messageDiv.className = `${baseClasses} bg-gray-700 text-slate-300 self-start rounded-bl-none`;
+            messageDiv.style.alignSelf = "flex-end"; // RTL: AI messages on the right
+          } else {
+            // ai-error
+            messageDiv.className = `${baseClasses} bg-red-800 text-white self-start rounded-bl-none`;
+            messageDiv.style.alignSelf = "flex-end";
+          }
+
+          messageDiv.textContent = text;
+          chatBox.appendChild(messageDiv);
+          chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the bottom
+        };
+
+        // --- INITIALIZATION & EVENT LISTENERS ---
+        fileInput.addEventListener("change", handleFileSelect);
+        sendBtn.addEventListener("click", handleSendMessage);
+        debugBtn.addEventListener("click", showDummyResults);
+        chatInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleSendMessage();
+          }
+        });
+
+        // Initial greeting from AI
+        appendMessage(
+          "سلام! می‌توانید سوالات خود را در مورد این فایل از من بپرسید.",
+          "ai"
+        );
+      });
+    </script>
   </body>
 </html>
