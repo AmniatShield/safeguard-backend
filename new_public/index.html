@@ -246,15 +246,25 @@
             >
               <div>
                 <p class="text-sm text-slate-400">نام فایل</p>
-                <p id="fileName" class="font-mono text-lg truncate">--</p>
+                <p id="fileName" class="font-mono text-lg truncate" dir="ltr">
+                  --
+                </p>
               </div>
               <div>
                 <p class="text-sm text-slate-400">اندازه</p>
-                <p id="fileSize" class="font-mono text-lg">--</p>
+                <p id="fileSize" class="font-mono text-lg" dir="ltr">--</p>
               </div>
               <div>
-                <p class="text-sm text-slate-400">هش MD5</p>
-                <p id="fileHash" class="font-mono text-sm">--</p>
+                <p class="text-xs text-slate-400">هش MD5</p>
+                <p
+                  id="fileHash"
+                  class="font-mono text-sm cursor-pointer hover:text-gray-500"
+                  title="کپی کردن هش"
+                  onclick="navigator.clipboard.writeText(this.innerText)"
+                  dir="ltr"
+                >
+                  --
+                </p>
               </div>
             </div>
             <!-- AI Description Card -->
