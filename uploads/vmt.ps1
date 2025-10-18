@@ -1,4 +1,4 @@
-# V5 B3
+# V5 B4
 
 $scriptDir = Split-Path -Parent $PSCommandPath
 Set-Location -Path $scriptDir
@@ -160,7 +160,7 @@ Start-Sleep -Seconds 5
 Write-Output "Running process for 1 minute..."
 Start-Sleep -Seconds 5
 # Get Open File Handles
-Start-Process -FilePath $handleTool -ArgumentList "-accepteula -p $pidd" -RedirectStandardOutput $openHandles -NoNewWindow -Wait
+Start-Process -FilePath $handleTool -ArgumentList "-nobanner -a -p $pidd" -RedirectStandardOutput $openHandles -NoNewWindow -Wait
 # Get Network connections
 $connections = Get-NetTCPConnection | Where-Object { $_.OwningProcess -eq $pidd }
 # Attempt to stop the process if it's still running

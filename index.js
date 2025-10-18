@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const vmname = "win10";
-const cleanSnapshotName = "clean2";
+const cleanSnapshotName = "clean3";
 let uploadedFileName = "vmt.ps1";
 const openai = new OpenAI({
   apiKey: `aa-Wvn09ff6EKoCXiPk5wawvuDGO2Enl5V32Bat1yCnZd7VvN6r`,
