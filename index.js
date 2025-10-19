@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const vmname = "win10";
-const cleanSnapshotName = "clean3";
+const cleanSnapshotName = "clean4";
 let uploadedFileName = "vmt.ps1";
 const openai = new OpenAI({
   apiKey: `aa-Wvn09ff6EKoCXiPk5wawvuDGO2Enl5V32Bat1yCnZd7VvN6r`,
@@ -40,6 +40,12 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+
+let pythonserver = exec("python ./typeAnalysis/server.py");
+
+pythonserver.on("spawn", () => {
+  console.log(`[${currentTime()}] Python server is running`);
+});
 
 // Handle file upload
 app.post("/upload", upload.single("file"), (req, res) => {
@@ -90,14 +96,19 @@ app.get("/update", async (req, res) => {
     path.join(__dirname, "uploads", uploadedFileName)
   );
   let fileSize = getFileSize(path.join(__dirname, "uploads", uploadedFileName));
-  res.send(
-    JSON.stringify({
-      results: results,
-      fileHash: fileHash,
-      fileSize: fileSize,
-      fileName: uploadedFileName,
-    })
-  );
+  let maltype = getLabelAndDelete("./typeAnalysis/predictions.log");
+  if (maltype != null) {
+    res.send(
+      JSON.stringify({
+        results: results,
+        fileHash: fileHash,
+        fileSize: fileSize,
+        fileName: uploadedFileName,
+        maltype: maltype,
+      })
+    );
+  }
+
   if (results != null) {
     reset();
   }
@@ -124,6 +135,12 @@ function reset() {
   results2 = null;
   analysis_log = null;
   const process = exec(`sudo virsh shutdown ${vmname}`);
+  pythonserver.kill();
+  pythonserver = exec("python ./typeAnalysis/server.py");
+
+  pythonserver.on("spawn", () => {
+    console.log(`[${currentTime()}] Python server is running`);
+  });
   console.log(`[${currentTime()}] Reset!`);
 }
 // Start the server
@@ -240,4 +257,29 @@ function getFileSize(filePath) {
 
 function currentTime() {
   return new Date().toLocaleString();
+}
+async function getLabelAndDelete(logPath) {
+  try {
+    // Check if file exists
+    const stat = await fs.stat(logPath).catch(() => null);
+    if (!stat || stat.size === 0) return null; // not exist or empty
+
+    // Read file
+    const content = await fs.readFile(logPath, "utf8");
+    if (!content.trim()) return null; // double-check for empty content
+
+    // Extract label=...
+    const match = content.match(/label=([^\s]+)/);
+    if (!match) return null;
+
+    const label = match[1];
+
+    // Delete file
+    await fs.unlink(logPath);
+
+    return label;
+  } catch (err) {
+    console.error("Error:", err);
+    return null;
+  }
 }

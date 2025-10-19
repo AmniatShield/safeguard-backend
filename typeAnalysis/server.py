@@ -52,6 +52,7 @@ def predict():
     انتظار: JSON body: {"features": [f1,f2,...], "sample": "optional-name"}
     خروجی: {"prediction": 0/1, "label": "Ransomware"|"Trojan"}
     """
+    print('Recived Something!')
     try:
         data = request.get_json(force=True)
     except Exception:
