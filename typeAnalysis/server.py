@@ -6,8 +6,8 @@ import os
 import datetime
 
 # ---------- تنظیمات ----------
-MODEL_PATH = "model2.pkl"
-SCALER_PATH = "scaler.joblib"
+MODEL_PATH = "/home/mohsen/Documents/Github/safeguard-backend/typeAnalysis/model2.pkl"
+SCALER_PATH = "/home/mohsen/Documents/Github/safeguard-backend/typeAnalysis/scaler.joblib"
 EXPECTED_ORDER = [
     "max_entropy","total_raw_size","total_virtual_size","avg_entropy",
     "entry_point","num_sections","num_high_entropy_sections",

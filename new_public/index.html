@@ -388,10 +388,6 @@
             })
             .catch((error) => {
               console.error("Error fetching data:", error);
-              clearInterval(pollingInterval);
-              // Using a simple browser alert for error feedback
-              alert("خطایی در تحلیل فایل رخ داد. لطفا دوباره تلاش کنید.");
-              showView("upload"); // Go back to upload view on error
             });
         };
 

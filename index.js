@@ -41,12 +41,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-let pythonserver = exec("python ./typeAnalysis/server.py");
+let pythonserver = exec("python3 typeAnalysis/server.py");
 
 pythonserver.on("spawn", () => {
-  console.log(`[${currentTime()}] Python server is running`);
+  console.log(
+    `[${currentTime()}] Python server is running at http://localhost:5000`
+  );
 });
-
 // Handle file upload
 app.post("/upload", upload.single("file"), (req, res) => {
   if (!req.file) {
@@ -96,18 +97,17 @@ app.get("/update", async (req, res) => {
     path.join(__dirname, "uploads", uploadedFileName)
   );
   let fileSize = getFileSize(path.join(__dirname, "uploads", uploadedFileName));
-  let maltype = getLabelAndDelete("./typeAnalysis/predictions.log");
-  if (maltype != null) {
-    res.send(
-      JSON.stringify({
-        results: results,
-        fileHash: fileHash,
-        fileSize: fileSize,
-        fileName: uploadedFileName,
-        maltype: maltype,
-      })
-    );
-  }
+  let maltype = await getLabelAndDelete("./typeAnalysis/predictions.log");
+
+  res.send(
+    JSON.stringify({
+      results: results,
+      fileHash: fileHash,
+      fileSize: fileSize,
+      fileName: uploadedFileName,
+      maltype: maltype,
+    })
+  );
 
   if (results != null) {
     reset();
@@ -135,12 +135,6 @@ function reset() {
   results2 = null;
   analysis_log = null;
   const process = exec(`sudo virsh shutdown ${vmname}`);
-  pythonserver.kill();
-  pythonserver = exec("python ./typeAnalysis/server.py");
-
-  pythonserver.on("spawn", () => {
-    console.log(`[${currentTime()}] Python server is running`);
-  });
   console.log(`[${currentTime()}] Reset!`);
 }
 // Start the server
@@ -260,15 +254,21 @@ function currentTime() {
 }
 async function getLabelAndDelete(logPath) {
   try {
-    // Check if file exists
-    const stat = await fs.stat(logPath).catch(() => null);
-    if (!stat || stat.size === 0) return null; // not exist or empty
+    // Check if file exists and isn’t empty
+    let stat;
+    try {
+      stat = await fs.stat(logPath);
+    } catch {
+      return null; // file doesn’t exist
+    }
 
-    // Read file
+    if (!stat || stat.size === 0) return null;
+
+    // Read content
     const content = await fs.readFile(logPath, "utf8");
-    if (!content.trim()) return null; // double-check for empty content
+    if (!content.trim()) return null;
 
-    // Extract label=...
+    // Extract label
     const match = content.match(/label=([^\s]+)/);
     if (!match) return null;
 
@@ -279,7 +279,7 @@ async function getLabelAndDelete(logPath) {
 
     return label;
   } catch (err) {
-    console.error("Error:", err);
+    console.error("Error in getLabelAndDelete:", err);
     return null;
   }
 }
