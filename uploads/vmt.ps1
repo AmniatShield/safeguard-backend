@@ -1,4 +1,4 @@
-# V5 B4
+# V5 B6
 
 $scriptDir = Split-Path -Parent $PSCommandPath
 Set-Location -Path $scriptDir
@@ -113,7 +113,9 @@ $sampleFilePath = ".\sample.exe"
 Download-File -url $downloadUrl -destinationPath $sampleFilePath
 
 $flossTool = "sysinternals\floss.exe"
+$strings64 = "sysinternals\strings64.exe"
 $handleTool = "sysinternals\handle64.exe"
+$collector = ".\collector.py"
 # Define output directory and file paths
 $outputDir    = "AnalysisOutput"
 $stringsOutput = "$outputDir\StringsOutput.txt"
@@ -140,6 +142,12 @@ foreach ($path in $paths) {
 # Extract strings from the target executable using the Strings tool
 Write-Output "Extracting strings from: $sampleFilePath"
 Start-Process -FilePath $flossTool -ArgumentList "--only static -q `"$sampleFilePath`"" -RedirectStandardOutput $stringsOutput -NoNewWindow -Wait
+Start-Process python -ArgumentList @(
+    $collector,
+    "`"$sampleFilePath`"",
+    "`"$strings64`"",
+    "`"http://192.168.122.1:5000/predict`""
+)
 
 $content = Get-Content -Path $stringsOutput -Raw
 $filteredContent = Remove-ShortLines -InputString $content
