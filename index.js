@@ -97,10 +97,9 @@ app.get("/update", async (req, res) => {
     path.join(__dirname, "uploads", uploadedFileName)
   );
   let fileSize = getFileSize(path.join(__dirname, "uploads", uploadedFileName));
-  let maltype = await getLabelAndDelete(
+  let maltype = await getLabelAndDeleteAsync(
     path.join(__dirname, "predictions.log")
   );
-
   let obj = {
     results: results,
     fileHash: fileHash,
@@ -145,6 +144,9 @@ function reset() {
   results2 = null;
   analysis_log = null;
   const process = exec(`sudo virsh shutdown ${vmname}`);
+  fs.unlink(path.join(__dirname, "predictions.log"), (err) => {
+    if (err) console.error("Failed to delete log:", err);
+  });
   console.log(`[${currentTime()}] Reset!`);
 }
 // Start the server
@@ -257,23 +259,28 @@ function getFileSize(filePath) {
 function currentTime() {
   return new Date().toLocaleString();
 }
-async function getLabelAndDelete(logPath) {
-  try {
-    // Read content
-    const content = await fs.readFile(logPath, "utf8");
-    console.log("Contents of malware type analysis: " + content);
+function getLabelAndDelete(logPath, callback) {
+  // Read the file
+  fs.readFile(logPath, "utf8", (err, content) => {
+    if (err || !content.trim()) return callback(null);
+    console.log(`Extracted: ${content}`);
     // Extract label
     const match = content.match(/label=([^\s]+)/);
-    if (!match) return null;
+    console.log(`Matched: ${content}`);
+    if (!match) return callback(null);
 
     const label = match[1];
-
-    // Delete file
-    await fs.unlink(logPath);
-
-    return label;
-  } catch (err) {
-    console.error("Error in getLabelAndDelete:", err);
-    return null;
-  }
+    return callback(label);
+    /*fs.unlink(logPath, (err) => {
+      if (err) console.error("Failed to delete log:", err);
+      return callback(label);
+    });*/
+  });
+}
+function getLabelAndDeleteAsync(logPath) {
+  return new Promise((resolve) => {
+    getLabelAndDelete(logPath, (label) => {
+      resolve(label);
+    });
+  });
 }
