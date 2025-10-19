@@ -99,6 +99,14 @@ app.get("/update", async (req, res) => {
   let fileSize = getFileSize(path.join(__dirname, "uploads", uploadedFileName));
   let maltype = await getLabelAndDelete("./typeAnalysis/predictions.log");
 
+  let obj = {
+    results: results,
+    fileHash: fileHash,
+    fileSize: fileSize,
+    fileName: uploadedFileName,
+    maltype: maltype,
+  };
+  console.log(obj);
   res.send(
     JSON.stringify({
       results: results,
