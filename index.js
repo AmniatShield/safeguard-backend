@@ -97,7 +97,9 @@ app.get("/update", async (req, res) => {
     path.join(__dirname, "uploads", uploadedFileName)
   );
   let fileSize = getFileSize(path.join(__dirname, "uploads", uploadedFileName));
-  let maltype = await getLabelAndDelete("./typeAnalysis/predictions.log");
+  let maltype = await getLabelAndDelete(
+    path.join(__dirname, "predictions.log")
+  );
 
   let obj = {
     results: results,
@@ -168,11 +170,6 @@ ${llog}
     messages: [{ role: "user", content: message }],
     model: "gemini-2.5-flash-lite",
   });
-  console.log(
-    `[${currentTime()}] AI Response: \n ${
-      chatCompletion.choices[0].message.content
-    }`
-  );
   results = chatCompletion.choices[0].message.content.replace(
     "این برنامه نیست",
     "این برنامه امن نیست"
@@ -262,20 +259,9 @@ function currentTime() {
 }
 async function getLabelAndDelete(logPath) {
   try {
-    // Check if file exists and isn’t empty
-    let stat;
-    try {
-      stat = await fs.stat(logPath);
-    } catch {
-      return null; // file doesn’t exist
-    }
-
-    if (!stat || stat.size === 0) return null;
-
     // Read content
     const content = await fs.readFile(logPath, "utf8");
-    if (!content.trim()) return null;
-
+    console.log("Contents of malware type analysis: " + content);
     // Extract label
     const match = content.match(/label=([^\s]+)/);
     if (!match) return null;
