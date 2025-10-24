@@ -102,14 +102,6 @@ app.get("/update", async (req, res) => {
   let maltype = await getLabelAndDeleteAsync(
     path.join(__dirname, "predictions.log")
   );
-  let obj = {
-    results: results,
-    fileHash: fileHash,
-    fileSize: fileSize,
-    fileName: uploadedFileName,
-    maltype: maltype,
-  };
-  console.log(obj);
   res.send(
     JSON.stringify({
       results: results,
@@ -179,7 +171,7 @@ The first sentence must be one of the following depending on your conclusion:
 "این برنامه امن نیست."
 
 After the first sentence, write a short but informative explanation that summarizes the main behaviors observed in the log.
-
+طح هسته ویندوز استفاده می‌شوند. توابع Io برای ایجاد و مدیریت دستگاه‌ها و درایورهای ورودی/خروجی (I/O) هستند.
 If there are any suspicious actions, describe them clearly and concisely in Persian — for example:
 
 دسترسی غیرعادی به رجیستری
