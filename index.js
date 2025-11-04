@@ -76,8 +76,11 @@ app.post("/upload", upload.single("file"), (req, res) => {
 });*/
 let results = null;
 let results2 = null;
+let netlog = null;
 let analysis_log = null;
 let aiChat = [];
+
+let tcpdump = exec("sudo tcpdump -i virbr0 > net.log");
 app.post("/analyze", upload.single("file"), async (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
@@ -134,9 +137,13 @@ function reset() {
   results = null;
   results2 = null;
   analysis_log = null;
+  netlog = null;
   aiChat = [];
   const process = exec(`sudo virsh shutdown ${vmname}`);
   fs.unlink(path.join(__dirname, "predictions.log"), (err) => {
+    if (err) console.error("Failed to delete log:", err);
+  });
+  fs.unlink(path.join(__dirname, "net.log"), (err) => {
     if (err) console.error("Failed to delete log:", err);
   });
   console.log(`[${currentTime()}] Reset!`);
@@ -190,6 +197,8 @@ You may mention patterns that look similar to known malware behavior, but avoid 
 
 Write your summary in a natural, fluent, and easy-to-understand Persian style, as if you are explaining it to a regular computer user who has no deep technical knowledge.
 
+Here is the network connections made by the malware:
+${netlog}
 Here is the log you will analyze:
 ${llog}
 `;
@@ -316,4 +325,13 @@ function getLabelAndDeleteAsync(logPath) {
       resolve(label);
     });
   });
+}
+function getNetworkLog() {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, "net.log"), "utf8");
+    return data;
+  } catch (err) {
+    console.error("Error reading file:", err);
+    return null;
+  }
 }
