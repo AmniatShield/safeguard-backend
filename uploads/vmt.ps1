@@ -1,4 +1,4 @@
-# V5 B6
+# V6 B1
 
 $scriptDir = Split-Path -Parent $PSCommandPath
 Set-Location -Path $scriptDir
@@ -145,8 +145,9 @@ Start-Process -FilePath $flossTool -ArgumentList "--only static -q `"$sampleFile
 Start-Process python -ArgumentList @(
     $collector,
     "`"$sampleFilePath`"",
-    "`"$strings64`"",
-    "`"http://192.168.122.1:5000/predict`""
+    "`"./temp.json`"",
+    "--server http://192.168.122.1:5000",
+    "--token bc52a117-a58f-4853-942f-0ed8ded89ade"
 )
 
 $content = Get-Content -Path $stringsOutput -Raw

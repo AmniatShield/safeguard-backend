@@ -2,6 +2,8 @@
 
 Clone the repo
 
+> this is outdated i have to fix it later
+
 ## Second Stage
 
 Install npm dependencies with `npm i`

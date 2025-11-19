@@ -1,0 +1,56 @@
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+import joblib
+import pandas as pd
+
+Tmodel = keras.models.load_model('/content/T_model.keras')
+Rmodel = keras.models.load_model('/content/R_model.keras')
+Smodel = keras.models.load_model('/content/S_model.keras')
+Cmodel = keras.models.load_model('/content/C_model.keras')
+Dmodel = keras.models.load_model('/content/D_model.keras')
+
+
+
+T_scaler = joblib.load('/content/T_scaler.pkl')
+R_scaler = joblib.load('/content/R_scaler.pkl')
+S_scaler = joblib.load('/content/S_scaler.pkl')
+C_scaler = joblib.load('/content/C_scaler.pkl')
+D_scaler = joblib.load('/content/D_scaler.pkl')
+
+
+xT = T_scaler.transform(x)
+xR = R_scaler.transform(x)
+xS = S_scaler.transform(x)
+xC = C_scaler.transform(x)
+xD = D_scaler.transform(x)
+
+Tres = Tmodel.predict(xT)
+Rres = Rmodel.predict(xR)
+Sres = Smodel.predict(xS)
+Cres = Cmodel.predict(xC)
+Dres = Dmodel.predict(xD)
+
+
+
+
+total_sum = Tres + Rres + Sres + Cres + Dres
+
+Tres_percentage = (Tres / total_sum) * 100
+Rres_percentage = (Rres / total_sum) * 100
+Sres_percentage = (Sres / total_sum) * 100
+Cres_percentage = (Cres / total_sum) * 100
+Dres_percentage = (Dres / total_sum) * 100
+
+# Set negative percentages to zero
+Tres_percentage = max(0, Tres_percentage[0][0])
+Rres_percentage = max(0, Rres_percentage[0][0])
+Sres_percentage = max(0, Sres_percentage[0][0])
+Cres_percentage = max(0, Cres_percentage[0][0])
+Dres_percentage = max(0, Dres_percentage[0][0])
+
+print(f"Trojan percentage: {Tres_percentage:.2f}%")
+print(f"Ransomware percentage: {Rres_percentage:.2f}%")
+print(f"Safe percentage: {Sres_percentage:.2f}%")
+print(f"Coin percentage: {Cres_percentage:.2f}%")
+print(f"Dropper percentage: {Dres_percentage:.2f}%")
