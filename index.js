@@ -43,13 +43,17 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-let pythonserver = exec(`python3 ${mlPath}/flask_server.py`);
+let pythonserver = exec(`python3 ${mlPath}/server/flask_server.py`);
 
 pythonserver.on("spawn", () => {
+  pythonserver.stdout.pipe(global.process.stdout);
+  pythonserver.stderr.pipe(global.process.stderr);
   console.log(
     `[${currentTime()}] Python server is running at http://localhost:5000`
   );
 });
+
+let tcpdump = exec(`sudo tcpdump -i virbr0 > ${__dirname}/net.log`);
 // Handle file upload
 app.post("/upload", upload.single("file"), (req, res) => {
   if (!req.file) {
@@ -82,7 +86,6 @@ let netlog = null;
 let analysis_log = null;
 let aiChat = [];
 
-let tcpdump = exec("sudo tcpdump -i virbr0 > net.log");
 app.post("/analyze", upload.single("file"), async (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
@@ -104,16 +107,15 @@ app.get("/update", async (req, res) => {
     path.join(__dirname, "uploads", uploadedFileName)
   );
   let fileSize = getFileSize(path.join(__dirname, "uploads", uploadedFileName));
-  let maltypes = "TESTING"; /* await getLabelAndDeleteAsync(
-    path.join(__dirname, "predictions.log")
-  );*/
+  let maltypes = await getPercentages(path.join(__dirname, "collector.json"));
+  //console.log(`Sending malware type predictions: ${JSON.stringify(maltypes)}`);
   res.send(
     JSON.stringify({
       results: results,
       fileHash: fileHash,
       fileSize: fileSize,
       fileName: uploadedFileName,
-      maltype: maltypes,
+      maltypes: maltypes,
     })
   );
 });
@@ -142,7 +144,7 @@ function reset() {
   netlog = null;
   aiChat = [];
   const process = exec(`sudo virsh shutdown ${vmname}`);
-  fs.unlink(path.join(__dirname, "predictions.log"), (err) => {
+  fs.unlink(path.join(__dirname, "collector.json"), (err) => {
     if (err) console.error("Failed to delete log:", err);
   });
   fs.unlink(path.join(__dirname, "net.log"), (err) => {
@@ -305,24 +307,19 @@ function currentTime() {
   return new Date().toLocaleString();
 }
 function getLabelAndDelete(logPath, callback) {
-  // Read the file
+  // Read the fileb
   fs.readFile(logPath, "utf8", (err, content) => {
     if (err || !content.trim()) return callback(null);
-    console.log(`Extracted: ${content}`);
-    // Extract label
-    const match = content.match(/label=([^\s]+)/);
-    console.log(`Matched: ${content}`);
-    if (!match) return callback(null);
 
-    const label = match[1];
-    return callback(label);
+    let js = JSON.parse(content);
+    callback(js.percentages);
     /*fs.unlink(logPath, (err) => {
       if (err) console.error("Failed to delete log:", err);
       return callback(label);
     });*/
   });
 }
-function getLabelAndDeleteAsync(logPath) {
+function getPercentages(logPath) {
   return new Promise((resolve) => {
     getLabelAndDelete(logPath, (label) => {
       resolve(label);

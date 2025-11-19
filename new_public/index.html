@@ -435,7 +435,7 @@
             fileName: "trojan_horse.exe",
             fileSize: 4.2,
             fileHash: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
-            maltype: "Trojan",
+            maltypes: "Trojan (?)",
             results:
               "این فایل یک تروجان شناسایی شده است که تلاش می‌کند به عنوان یک برنامه قانونی ظاهر شود. پس از اجرا، در پس‌زمینه فرآیندهای مخفی ایجاد کرده و تلاش می‌کند تا از طریق پورت 443 با یک سرور کنترل و فرمان (C2) در آدرس 198.51.100.10 ارتباط برقرار کند. این بدافزار قابلیت ثبت کلیدهای فشرده شده (Keylogging) را دارد و به دنبال سرقت اطلاعات حساس مانند رمزهای عبور ذخیره شده در مرورگرها است. توصیه می‌شود این فایل را فورا حذف کرده و سیستم خود را برای هرگونه نفوذ بیشتر اسکن کنید.",
           };
@@ -455,7 +455,8 @@
           resultFields.fileSize.textContent =
             `${Number(data.fileSize).toFixed(2)} MB` || "0 MB";
           resultFields.fileHash.textContent = data.fileHash || "N/A";
-          resultFields.maltype.textContent = data.maltype || "ناشناس";
+          resultFields.maltype.textContent =
+            JSON.stringify(data.maltypes) || "ناشناس";
           resultFields.aiDesc.textContent =
             data.results || "No description available.";
         };

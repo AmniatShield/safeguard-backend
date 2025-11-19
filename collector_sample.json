@@ -1,0 +1,16 @@
+{
+  "percentages": {
+    "Trojan": 14.17,
+    "Ransomware": 72.07,
+    "Safe": 5.82,
+    "Coinminer": 6.59,
+    "Dropper": 1.36
+  },
+  "raw_scores": {
+    "Trojan": 0.15363803505897522,
+    "Ransomware": 0.7816482782363892,
+    "Safe": 0.06309199333190918,
+    "Coinminer": 0.07148315012454987,
+    "Dropper": 0.014719720929861069
+  }
+}

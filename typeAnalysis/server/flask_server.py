@@ -1,8 +1,9 @@
-# flask_server.py
 from flask import Flask, request, jsonify
 import os
 from inference import MultiModelInferencer
 import logging
+import json
+import time
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -31,13 +32,31 @@ def analyze():
 
     # data باید object فیچرها باشه یا {"features": {...}}
     features = data.get('features') if isinstance(data, dict) and 'features' in data else data
+
     try:
         res = inferencer.predict_percentages(features)
+
+        # -----------------------------------------
+        # ذخیره JSON ورودی کالکتور روی دیسک
+        # -----------------------------------------
+        timestamp = int(time.time() * 1000)
+        filename = f"collector.json"
+        save_path = os.path.join(os.getcwd(), filename)
+
+        with open(save_path, "w", encoding="utf-8") as f:
+            json.dump(features, f, indent=4, ensure_ascii=False)
+
+        app.logger.info(f"Saved collector JSON input to: {save_path}")
+        # -----------------------------------------
+
         return jsonify({'ok': True, 'result': res})
+
     except Exception as e:
         app.logger.exception("inference failed")
         return jsonify({'ok': False, 'error': str(e)}), 500
 
+
 if __name__ == '__main__':
     # برای production از gunicorn / systemd و nginx استفاده کن
     app.run(host='0.0.0.0', port=5000, debug=False)
+
