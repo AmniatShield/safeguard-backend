@@ -12,10 +12,12 @@
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-      xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
     <link rel="shortcut icon" href="./ASRaw.png" type="image/x-icon" />
 
@@ -152,6 +154,32 @@
         background-color: #8b5cf6; /* violet-500 */
         border-radius: 10px;
         border: 2px solid #1f2937;
+      }
+
+      /* Pie tooltip/popover */
+      .maltype-popover {
+        position: absolute;
+        z-index: 9999;
+        background: rgba(17, 24, 39, 0.98);
+        border: 1px solid rgba(148, 163, 184, 0.08);
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(2, 6, 23, 0.7);
+        width: 280px;
+        direction: ltr; /* keep chart LTR for proper canvas placement */
+        pointer-events: auto;
+      }
+
+      .maltype-popover .chart-legend {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #cbd5e1;
+      }
+
+      .maltype-popover canvas {
+        display: block;
+        width: 100% !important;
+        height: 160px !important;
       }
     </style>
   </head>
@@ -324,6 +352,7 @@
         const chatInput = document.getElementById("chat-input");
         const chatBox = document.getElementById("ai-chat-box");
         const debugBtn = document.getElementById("debug-btn");
+        const maltypeEl = document.getElementById("maltype");
 
         const views = {
           upload: document.getElementById("upload-view"),
@@ -331,21 +360,13 @@
           results: document.getElementById("results-view"),
         };
 
-        const resultFields = {
-          fileName: document.getElementById("fileName"),
-          fileSize: document.getElementById("fileSize"),
-          fileHash: document.getElementById("fileHash"),
-          maltype: document.getElementById("maltype"),
-          aiDesc: document.getElementById("aiDesc"),
-        };
-
-        // --- STATE MANAGEMENT ---
+        // --- STATE ---
         let pollingInterval;
+        let lastMaltypes = null; // will hold the latest maltypes object
+        let popover = null;
+        let currentChart = null;
+        let hideTimer = null;
 
-        /**
-         * Hides all views and shows the specified view.
-         * @param {('upload'|'loading'|'results')} viewName The name of the view to show.
-         */
         const showView = (viewName) => {
           Object.values(views).forEach((view) => view.classList.add("hidden"));
           if (views[viewName]) {
@@ -353,26 +374,17 @@
           }
         };
 
-        // --- CORE API & APP LOGIC ---
-
-        /**
-         * Handles the file selection event.
-         */
         const handleFileSelect = () => {
           if (!fileInput.files || fileInput.files.length === 0) return;
 
           showView("loading");
-          fileForm.submit(); // <-- YOUR API-RELATED CODE (UNCHANGED)
+          fileForm.submit(); // submit to backend
 
-          // Start polling for results from the server
-          pollingInterval = setInterval(pollForResults, 2000); // Poll every 2 seconds
+          pollingInterval = setInterval(pollForResults, 2000);
         };
 
-        /**
-         * Fetches updates from the server until results are available.
-         */
         const pollForResults = () => {
-          fetch("/update") // <-- YOUR API-RELATED CODE (UNCHANGED)
+          fetch("/update")
             .then((response) => {
               if (!response.ok) throw new Error("Network response was not ok");
               return response.json();
@@ -392,9 +404,6 @@
             });
         };
 
-        /**
-         * Handles sending a message to the AI chatbot.
-         */
         const handleSendMessage = async () => {
           const messageText = chatInput.value.trim();
           if (!messageText) return;
@@ -403,7 +412,6 @@
           chatInput.value = "";
 
           try {
-            // <-- YOUR API-RELATED CODE (UNCHANGED)
             const response = await fetch("/ai", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -421,9 +429,7 @@
           }
         };
 
-        /**
-         * Shows dummy data for debugging purposes.
-         */
+        // --- DUMMY (debug) data uses the requested scheme now ---
         const showDummyResults = () => {
           console.log(
             "Debug Mode Activated: Bypassing upload and showing dummy data."
@@ -435,7 +441,14 @@
             fileName: "trojan_horse.exe",
             fileSize: 4.2,
             fileHash: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
-            maltypes: "Trojan (?)",
+            // requested scheme
+            maltypes: {
+              Trojan: 14.17,
+              Ransomware: 72.07,
+              Safe: 5.82,
+              Coinminer: 6.59,
+              Dropper: 1.36,
+            },
             results:
               "این فایل یک تروجان شناسایی شده است که تلاش می‌کند به عنوان یک برنامه قانونی ظاهر شود. پس از اجرا، در پس‌زمینه فرآیندهای مخفی ایجاد کرده و تلاش می‌کند تا از طریق پورت 443 با یک سرور کنترل و فرمان (C2) در آدرس 198.51.100.10 ارتباط برقرار کند. این بدافزار قابلیت ثبت کلیدهای فشرده شده (Keylogging) را دارد و به دنبال سرقت اطلاعات حساس مانند رمزهای عبور ذخیره شده در مرورگرها است. توصیه می‌شود این فایل را فورا حذف کرده و سیستم خود را برای هرگونه نفوذ بیشتر اسکن کنید.",
           };
@@ -444,28 +457,46 @@
           showView("results");
         };
 
-        // --- HELPER FUNCTIONS ---
-
-        /**
-         * Populates the results view with data from the server.
-         * @param {object} data The data object from the /update endpoint.
-         */
         const displayResults = (data) => {
+          resultFields = {
+            fileName: document.getElementById("fileName"),
+            fileSize: document.getElementById("fileSize"),
+            fileHash: document.getElementById("fileHash"),
+            maltype: document.getElementById("maltype"),
+            aiDesc: document.getElementById("aiDesc"),
+          };
+
           resultFields.fileName.textContent = data.fileName || "N/A";
           resultFields.fileSize.textContent =
-            `${Number(data.fileSize).toFixed(2)} MB` || "0 MB";
+            (data.fileSize != null
+              ? `${Number(data.fileSize).toFixed(2)} MB`
+              : "0 MB") || "0 MB";
           resultFields.fileHash.textContent = data.fileHash || "N/A";
-          resultFields.maltype.textContent =
-            JSON.stringify(data.maltypes) || "ناشناس";
+
+          // store maltypes in a variable for hover handler
+          lastMaltypes = data.maltypes || null;
+
+          // Show a simple label in the field: pick the highest-probability type if object
+          if (lastMaltypes && typeof lastMaltypes === "object") {
+            const entries = Object.entries(lastMaltypes);
+            if (entries.length > 0) {
+              entries.sort((a, b) => b[1] - a[1]);
+              const top = entries[0];
+              resultFields.maltype.textContent = `${top[0]} (${top[1]}%)`;
+            } else {
+              resultFields.maltype.textContent = "ناشناس";
+            }
+          } else if (typeof data.maltypes === "string") {
+            resultFields.maltype.textContent = data.maltypes;
+            lastMaltypes = null; // no chart if it's just string
+          } else {
+            resultFields.maltype.textContent = "ناشناس";
+          }
+
           resultFields.aiDesc.textContent =
             data.results || "No description available.";
         };
 
-        /**
-         * Appends a new message to the AI chat box.
-         * @param {string} text The message content.
-         * @param {('user'|'ai'|'ai-error')} sender The sender of the message.
-         */
         const appendMessage = (text, sender) => {
           const messageDiv = document.createElement("div");
           let baseClasses = "p-3 rounded-xl max-w-[85%] mb-2";
@@ -486,6 +517,190 @@
           chatBox.appendChild(messageDiv);
           chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the bottom
         };
+
+        // --- Popover logic (fixed flicker & chart issues) ---
+        function createPopover(targetEl, maltypesObj) {
+          if (!maltypesObj || typeof maltypesObj !== "object") return;
+          // if popover already exists, just reposition (don't recreate)
+          if (popover) {
+            positionPopover(targetEl);
+            return;
+          }
+
+          // cleanup any previous chart just in case
+          if (currentChart) {
+            try {
+              currentChart.destroy();
+            } catch (e) {}
+            currentChart = null;
+          }
+
+          popover = document.createElement("div");
+          popover.className = "maltype-popover";
+          popover.setAttribute("role", "dialog");
+          popover.setAttribute("aria-hidden", "false");
+
+          // canvas with explicit pixel size to avoid broken render
+          const canvas = document.createElement("canvas");
+          canvas.id = "maltype-chart-canvas";
+          // set pixel size explicitly (Chart.js respects canvas width/height attrs)
+          canvas.width = 560; // double of CSS width for sharper canvas on high-DPI
+          canvas.height = 320;
+          // scale down via CSS width so chart looks crisp but sized correctly
+          canvas.style.width = "100%";
+          canvas.style.height = "160px";
+
+          popover.appendChild(canvas);
+
+          const legendDiv = document.createElement("div");
+          legendDiv.className = "chart-legend";
+          popover.appendChild(legendDiv);
+
+          document.body.appendChild(popover);
+
+          // build data
+          const labels = Object.keys(maltypesObj);
+          const values = labels.map((k) => Number(maltypesObj[k]) || 0);
+
+          const ctx = canvas.getContext("2d");
+          // create chart
+          currentChart = new Chart(ctx, {
+            type: "pie",
+            data: {
+              labels,
+              datasets: [
+                {
+                  data: values,
+                  backgroundColor: [
+                    "#ef4444",
+                    "#f59e0b",
+                    "#10b981",
+                    "#6366f1",
+                    "#06b6d4",
+                  ],
+                  borderColor: "rgba(0,0,0,0.15)",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: function (ctx) {
+                      const lab = ctx.label || "";
+                      const val = ctx.parsed ?? 0;
+                      return `${lab}: ${val}%`;
+                    },
+                  },
+                },
+              },
+              maintainAspectRatio: false,
+            },
+          });
+
+          // populate legend
+          legendDiv.innerHTML = labels
+            .map((lab, i) => {
+              const val = values[i];
+              const color =
+                currentChart.data.datasets[0].backgroundColor[i] || "#fff";
+              return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                        <div style="display:flex;gap:8px;align-items:center">
+                          <span style="width:12px;height:12px;border-radius:2px;background:${color};display:inline-block"></span>
+                          <span style="opacity:0.95">${lab}</span>
+                        </div>
+                        <div style="opacity:0.9">${val}%</div>
+                      </div>`;
+            })
+            .join("");
+
+          // keep popover open while hovering it
+          popover.addEventListener("mouseenter", () => {
+            if (hideTimer) {
+              clearTimeout(hideTimer);
+              hideTimer = null;
+            }
+          });
+          popover.addEventListener("mouseleave", () => {
+            scheduleHidePopover();
+          });
+
+          positionPopover(targetEl);
+        }
+
+        function positionPopover(targetEl) {
+          if (!popover || !targetEl) return;
+          const rect = targetEl.getBoundingClientRect();
+          // compute preferred position above target; if not enough space, place below
+          const popW = popover.offsetWidth || 280;
+          const popH = popover.offsetHeight || 200;
+          let left = rect.left + rect.width / 2 - popW / 2;
+          left = Math.max(8, Math.min(left, window.innerWidth - popW - 8));
+          let top = rect.top - popH - 8;
+          if (top < 8) {
+            // not enough space above → place below
+            top = rect.bottom + 8;
+          }
+          popover.style.left = `${left}px`;
+          popover.style.top = `${top}px`;
+        }
+
+        function destroyPopover() {
+          if (currentChart) {
+            try {
+              currentChart.destroy();
+            } catch (e) {}
+            currentChart = null;
+          }
+          if (popover && popover.parentNode) {
+            popover.parentNode.removeChild(popover);
+          }
+          popover = null;
+        }
+
+        function scheduleHidePopover(delay = 120) {
+          if (hideTimer) clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => {
+            destroyPopover();
+            hideTimer = null;
+          }, delay);
+        }
+
+        // Events to show/hide popover with debounce and keeping popover hoverable
+        maltypeEl.addEventListener("mouseenter", (e) => {
+          if (!lastMaltypes || typeof lastMaltypes !== "object") return;
+          // cancel any pending hide
+          if (hideTimer) {
+            clearTimeout(hideTimer);
+            hideTimer = null;
+          }
+          // create or reposition
+          createPopover(e.currentTarget, lastMaltypes);
+        });
+
+        maltypeEl.addEventListener("mousemove", (e) => {
+          // reposition occasionally while pointer moves (works well with above)
+          if (popover) positionPopover(e.currentTarget);
+        });
+
+        maltypeEl.addEventListener("mouseleave", () => {
+          // small delay so pointer moving to popover doesn't close immediately
+          scheduleHidePopover();
+        });
+
+        // also hide on scroll/resize to avoid misplaced popovers
+        window.addEventListener(
+          "scroll",
+          () => {
+            scheduleHidePopover(80);
+          },
+          true
+        );
+        window.addEventListener("resize", () => {
+          scheduleHidePopover(80);
+        });
 
         // --- INITIALIZATION & EVENT LISTENERS ---
         fileInput.addEventListener("change", handleFileSelect);
